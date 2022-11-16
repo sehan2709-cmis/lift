@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "504652589251",
+    "project_id": "lift-621df",
+    "storage_bucket": "lift-621df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504652589251:android:d39965932341b028ca9a76",
+        "android_client_info": {
+          "package_name": "com.lift.kwon.lift"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504652589251-k29lhuta6l5p07d818kv5dm6grdc584f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lift.kwon.lift",
+            "certificate_hash": "8a4140bad6e18cef66ae197cb7419ed6d0a08700"
+          }
+        },
+        {
+          "client_id": "504652589251-sl2oq6shjve91p82atu4brsrd6jbm2cd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnT0zFhob26ULYYh2C-PGlb_SmvtLG5II"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "504652589251-sl2oq6shjve91p82atu4brsrd6jbm2cd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "504652589251-2081jug11628tvqjufbff9qrnodlrkim.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.lift.kwon.lift"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
