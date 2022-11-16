@@ -14,7 +14,8 @@ void main() {
   runApp(
    ChangeNotifierProvider(
       create: (context) => ApplicationState(),
-      builder: ((context, child) => const App()),
+      // if App() is set to const, then ApplicationStete() init() is not passed on... why?
+      builder: ((context, child) => App()),
     )
   );
 }
