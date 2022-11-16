@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+
+import 'home.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -21,7 +22,7 @@ class App extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Lift'),
     );
   }
 }
