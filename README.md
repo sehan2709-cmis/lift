@@ -1,6 +1,6 @@
 # lift
 
-MAD_22F - Final Project
+MAD_22-2 - Final Project
 
 ## Getting Started
 
