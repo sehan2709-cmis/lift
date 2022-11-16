@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 
-class ClassName extends StatefulWidget {
-  const ClassName({super.key, required this.title});
-  final String title;
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<ClassName> createState() => _ClassNameState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _ClassNameState extends State<ClassName> {
+class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Text(widget.title),
+      appBar: AppBar(
+        title: Text("Login"),
+      ),
+      body: SafeArea(
+        child: ListView(
+          children: [
+            ElevatedButton(
+              onPressed: () {},
+              child: Text("Google Login"),
+            ),
+          ],
         ),
-    body: // body widget
-    floatingActionButton: // floating button widget
+      ),
+    );
+    // floatingActionButton: // floating button widget
   }
 }
