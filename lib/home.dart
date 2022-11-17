@@ -80,7 +80,19 @@ class _HomePageState extends State<HomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "profile",
+          ),
+        ],
+      ),
     );
   }
 }
