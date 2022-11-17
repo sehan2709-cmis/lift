@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login"),
+        title: Text("LOGIN"),
       ),
       body: SafeArea(
         child: ListView(
