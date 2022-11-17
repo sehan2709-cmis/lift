@@ -24,6 +24,7 @@ class App extends StatelessWidget {
 
         initialRoute: '/login', // this one is selected
         routes: {
+          '/': (context) => const HomePage(title: "HOME"),
           '/login': (context) => const LoginPage(),
         });
   }

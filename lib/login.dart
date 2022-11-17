@@ -26,14 +26,20 @@ class _LoginPageState extends State<LoginPage> {
         child: ListView(
           children: [
             ElevatedButton(
-              onPressed: () {
-                signInWithGoogle();
+              onPressed: () async {
+                final login_sucess = signInWithGoogle();
+                if(await login_sucess){
+                  Navigator.of(context).pop();
+                }
               },
               child: Text("Google Login"),
             ),
             ElevatedButton(
-              onPressed: () {
-                anonymousSignIn();
+              onPressed: () async {
+                final login_sucess = anonymousSignIn();
+                if(await login_sucess){
+                  Navigator.of(context).pop();
+                }
               },
               child: Text("Anonymous Login"),
             ),
