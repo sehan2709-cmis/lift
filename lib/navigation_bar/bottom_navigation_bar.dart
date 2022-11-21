@@ -34,6 +34,18 @@ class BNavigationBar extends StatelessWidget {
         onTap: (index) {
           log("navigation $index is pressed!");
           navigationState.updateCurrentPage(index);
+          switch(index) {
+            case 0: // home
+              Navigator.of(context).popAndPushNamed('/');
+              break;
+            case 1: // data
+              Navigator.of(context).popAndPushNamed('/datapage');
+              break;
+            case 2: // ranking
+              break;
+            case 3: // profile
+              break;
+          }
         }
     );
   }
