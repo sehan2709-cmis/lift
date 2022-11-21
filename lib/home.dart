@@ -1,3 +1,9 @@
+import 'dart:developer';
+
+import 'package:lift/state_management/NavigationState.dart';
+import 'package:provider/provider.dart';
+
+import 'navigation_bar/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -34,12 +40,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    NavigationState _navigationState = Provider.of<NavigationState>(context);
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -80,7 +81,34 @@ class _HomePageState extends State<HomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: "home",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart),
+              label: "data",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.numbers),
+              label: "ranking",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: "profile",
+            ),
+          ],
+          currentIndex: _navigationState.currentPage,
+          selectedItemColor: Colors.blue,
+          onTap: (index) {
+            log("navigation $index is pressed!");
+            _navigationState.updateCurrentPage(index);
+          }
+      ),
     );
   }
 }

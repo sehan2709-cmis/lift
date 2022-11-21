@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lift/login.dart';
 import 'package:provider/provider.dart';
 import 'home.dart';
-import 'model/ApplicationState.dart';
+import 'state_management/ApplicationState.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
