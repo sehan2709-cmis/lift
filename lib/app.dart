@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lift/login.dart';
 import 'package:provider/provider.dart';
+import 'data.dart';
 import 'home.dart';
 import 'state_management/ApplicationState.dart';
 
@@ -26,6 +27,9 @@ class App extends StatelessWidget {
         routes: {
           '/': (context) => const HomePage(title: "HOME"),
           '/login': (context) => const LoginPage(),
+          // '/profile': (context) => const ProfilePage(),
+          '/datapage': (context) => DataPage(),
+          // '/ranking': (context) => const RankingPage(),
         });
   }
 }
