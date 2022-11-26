@@ -37,9 +37,9 @@ class _LoginPageState extends State<LoginPage> {
         Provider.of<ApplicationState>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("LOGIN"),
-      ),
+      // appBar: AppBar(
+      //   title: Text("LOGIN"),
+      // ),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -79,6 +79,9 @@ class _LoginPageState extends State<LoginPage> {
                   }
                 },
                 child: Text("Anonymous Login"),
+              ),
+              SizedBox(
+                height: 50,
               ),
             ],
           ),
