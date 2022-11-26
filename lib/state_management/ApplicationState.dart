@@ -25,6 +25,7 @@ class ApplicationState extends ChangeNotifier {
         log('User is currently signed out!');
       } else {
         log('User is signed in!');
+        log('     --> ${user.uid}');
       }
       notifyListeners();
     });
