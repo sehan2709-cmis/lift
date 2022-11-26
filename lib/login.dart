@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = signInWithGoogle();
                   if (await login_sucess) {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popAndPushNamed('/');
                   }
                 },
               ),
@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = anonymousSignIn();
                   if (await login_sucess) {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popAndPushNamed('/');
                   }
                 },
                 child: Text("Anonymous Login"),
