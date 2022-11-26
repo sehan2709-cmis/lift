@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/login.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +24,8 @@ class App extends StatelessWidget {
         ),
         // home: const HomePage(title: 'Lift'),
 
-        initialRoute: '/login', // this one is selected
+        // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
+        initialRoute: '/login',
         routes: {
           '/': (context) => const HomePage(title: "HOME"),
           '/login': (context) => const LoginPage(),
