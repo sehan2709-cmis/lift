@@ -8,6 +8,7 @@ import '../firebase_options.dart';
 
 class ApplicationState extends ChangeNotifier {
   ApplicationState() {
+    log("Creating ApplicationState");
     init();
   }
 
