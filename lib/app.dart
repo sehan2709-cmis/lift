@@ -27,6 +27,7 @@ class App extends StatelessWidget {
     );
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
         title: 'Lift',
         theme: ThemeData(
           primarySwatch: Colors.blue,
