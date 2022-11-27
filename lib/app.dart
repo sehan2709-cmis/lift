@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/login.dart';
+import 'package:lift/pose_detection.dart';
 import 'package:lift/ranking.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/profile.dart';
@@ -43,6 +44,7 @@ class App extends StatelessWidget {
           '/datapage': (context) => DataPage(),
           '/ranking': (context) => Ranking(),
           '/workout': (context) => Workout(),
+          '/posepage': (context) => PoseDetectionPage(),
           // '/ranking': (context) => const RankingPage(),
         });
   }
