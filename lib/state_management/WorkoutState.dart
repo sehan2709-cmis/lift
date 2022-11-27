@@ -26,42 +26,52 @@ class WorkoutState extends ChangeNotifier {
     await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform);
     uid = FirebaseAuth.instance.currentUser?.uid;
     db = FirebaseFirestore.instance;
-    workoutQuerySingle();
+    Workout workout = Workout("", []);
+    workout.exercises.add(Exercise("Barbell Curl").addSet(20, 10).addSet(20, 11).addSet(20, 12));
+    workout.exercises.add(Exercise("Tricep Extension").addSet(30, 20).addSet(30, 20).addSet(25, 20));
+    // addWorkout(workout);
+    workoutQueryOnce();
   }
 
-  void workoutQuerySingle() {
+  void addWorkout(Workout workout) {
+    final data = workout.data();
+    data["CreateDate"] = FieldValue.serverTimestamp();  // override to server timestamp
+    //TODO: change to uid
+    log(data.toString());
+    db.collection('<user-uid>')
+        .add(data);
+  }
+
+  void workoutQueryOnce() {
     if(uid == null) return;
-    _workouts = [];   // reset _workouts
-    log("Trying to get collection of ${uid}");
-    //uid!
+    log("Trying to get collection of user id: ${uid}");
     db.collection("<user-uid>").orderBy('CreateDate', descending: true).get().then(
           (res) {
-            List<Exercise> exercises = [];
-            for(final doc in res.docs){
-              // 
-              for(final field in doc.data().entries) {
-                //
-                if(field.key != 'CreateDate') {
-                  // key = name of exercise
-                  // value = list of {"weight", "rep"}
-                  // List<Map<String, int>> categoriesList = List<Map<String, int>>.from(field.value);
-                  // List<Map<String, int>> setsList = (field.value).map((Map<String, int> e) => e as Map<String, int>)?.toList();
-                  List<Map<String, int>> setsList = [];
-                  for(final sets in field.value) {
-                    Map<String, int> m = {};
-                    m['weight'] = int.parse(sets['weight']);
-                    m['reps'] = int.parse(sets['reps']);
-                    setsList.add(m);
-                  }
-                  exercises.add(Exercise(field.key, setsList));
+            // res will contain all of the documents of user collection
+            // final data = doc.data() as Map<String, dynamic>;
+            /* Fields:
+             *      1. <Ex 1>
+             *      2. <Ex 2>
+             *      3. CreateDate
+             */
+            _workouts = [];   // reset _workouts
+            for(DocumentSnapshot doc in res.docs){
+              final data = doc.data() as Map<String, dynamic>;
+              List<Exercise> exercises = [];  // create exercise list for a workout
+              for(final exerciseName in data.keys) {
+                if(exerciseName == 'CreateDate') continue;
+                // otherwise assume the field is an exercise data
+                Exercise exercise = Exercise(exerciseName);   // create an exercise
+                for(final set in data[exerciseName]) {
+                  exercise.addSet(set['weight'], set['reps']);
                 }
+                exercises.add(exercise);
               }
-              // final time = DateTime.fromMillisecondsSinceEpoch(doc['CreateDate']).toLocal().toString();
-              final workout = Workout('time', exercises);
+              final createDate = DateTime.fromMillisecondsSinceEpoch(data['CreateDate'].millisecondsSinceEpoch).toLocal().toString();
+              final workout = Workout(createDate, exercises);
               _workouts.add(workout);
             }
-            log(_workouts[0].Exercises[0].Name);
-            log(_workouts[0].Exercises[0].Sets.toString());
+            log(_workouts.toString());
       },
       onError: (e) => print("Error getting document: $e"),
     );
