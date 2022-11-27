@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     NavigationState _navigationState = Provider.of<NavigationState>(context);
@@ -23,123 +23,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("home"),
+        actions: [
+          IconButton(onPressed: (){Navigator.of(context).pushNamed('/profile');}, icon: Icon(Icons.person)),],
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          // mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)
-              ),
-              elevation: 6.0,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        IconButton(onPressed: (){}, icon: Icon(Icons.info_outline)),
-                        Text("Leg | Barbell Back Squat"),
-                        OutlinedButton(
-                          onPressed: () {},
-                          child: Text('Records'),
-                          style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 30,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          labelText: "add note",
-                          border: UnderlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Text("set"),
-                        Text("kg"),
-                        Text("reps"),
-                        Text("done"),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text("1"),
-                        SizedBox(
-                          width: 70,
-                          height: 30,
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: "kg",
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 70,
-                          height: 30,
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: "reps",
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        IconButton(onPressed: (){}, icon: Icon(Icons.check_box)),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        MaterialButton(
-                          shape: OutlineInputBorder(
-                              borderRadius: new BorderRadius.circular(12)
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            "--Delete set",
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-
-                        ),
-                        MaterialButton(
-                          shape: OutlineInputBorder(
-                              borderRadius: new BorderRadius.circular(12)
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            "++Add set",
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
+            Text("WELCOME HOME"),
           ],
         ),
       ),
