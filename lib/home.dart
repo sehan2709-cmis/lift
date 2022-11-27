@@ -8,16 +8,6 @@ import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -25,18 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,28 +22,126 @@ class _HomePageState extends State<HomePage> {
     // BNavigationBar nevi = new BNavigationBar();
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text("home"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)
+              ),
+              elevation: 6.0,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        IconButton(onPressed: (){}, icon: Icon(Icons.info_outline)),
+                        Text("Leg | Barbell Back Squat"),
+                        OutlinedButton(
+                          onPressed: () {},
+                          child: Text('Records'),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 30,
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          labelText: "add note",
+                          border: UnderlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Text("set"),
+                        Text("kg"),
+                        Text("reps"),
+                        Text("done"),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text("1"),
+                        SizedBox(
+                          width: 70,
+                          height: 30,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: "kg",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 70,
+                          height: 30,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelText: "reps",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        IconButton(onPressed: (){}, icon: Icon(Icons.check_box)),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        MaterialButton(
+                          shape: OutlineInputBorder(
+                              borderRadius: new BorderRadius.circular(12)
+                          ),
+                          onPressed: () {},
+                          child: Text(
+                            "--Delete set",
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+
+                        ),
+                        MaterialButton(
+                          shape: OutlineInputBorder(
+                              borderRadius: new BorderRadius.circular(12)
+                          ),
+                          onPressed: () {},
+                          child: Text(
+                            "++Add set",
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BNavigationBar(),
     );
