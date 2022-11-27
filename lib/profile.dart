@@ -24,12 +24,12 @@ class Profile extends StatelessWidget {
 
         actions: [
           SignedOutAction((context) {
-            FirebaseAuth.instance.signOut();
             GoogleSignIn().signOut();
+            FirebaseAuth.instance.signOut();
             Navigator.of(context).popAndPushNamed('/login');
           }),
         ],
-        showMFATile: true,
+        // showMFATile: true,
       ),
     );
   }
