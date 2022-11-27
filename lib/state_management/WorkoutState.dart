@@ -26,9 +26,9 @@ class WorkoutState extends ChangeNotifier {
     await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform);
     uid = FirebaseAuth.instance.currentUser?.uid;
     db = FirebaseFirestore.instance;
-    Workout workout = Workout("", []);
-    workout.exercises.add(Exercise("Barbell Curl").addSet(20, 10).addSet(20, 11).addSet(20, 12));
-    workout.exercises.add(Exercise("Tricep Extension").addSet(30, 20).addSet(30, 20).addSet(25, 20));
+    // Workout workout = Workout("", []);
+    // workout.exercises.add(Exercise("Barbell Curl").addSet(20, 10).addSet(20, 11).addSet(20, 12));
+    // workout.exercises.add(Exercise("Tricep Extension").addSet(30, 20).addSet(30, 20).addSet(25, 20));
     // addWorkout(workout);
     workoutQueryOnce();
   }
