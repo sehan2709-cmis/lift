@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/login.dart';
+import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'data.dart';
 import 'home.dart';
@@ -13,6 +14,11 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final simpleAppState = Provider.of<ApplicationState>(
+      context,
+      listen: false,
+    );
+
+    final a = Provider.of<WorkoutState>(
       context,
       listen: false,
     );
