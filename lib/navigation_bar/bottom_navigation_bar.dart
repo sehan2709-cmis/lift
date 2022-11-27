@@ -25,8 +25,8 @@ class BNavigationBar extends StatelessWidget {
             label: "ranking",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "profile",
+            icon: Icon(Icons.fitness_center),
+            label: "work out",
           ),
         ],
         currentIndex: navigationState.currentPage,
@@ -42,9 +42,10 @@ class BNavigationBar extends StatelessWidget {
               Navigator.of(context).popAndPushNamed('/datapage');
               break;
             case 2: // ranking
+              Navigator.of(context).popAndPushNamed('/ranking');
               break;
             case 3: // profile
-              Navigator.of(context).popAndPushNamed('/profile');
+              Navigator.of(context).popAndPushNamed('/workout');
               break;
           }
         }
