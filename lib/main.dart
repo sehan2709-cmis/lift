@@ -33,3 +33,11 @@ void main() {
     )
   );
 }
+
+/**
+ * Things to know...
+ *
+ * 1. camera plugin
+ *    ios: The camera plugin compiles for any version of iOS, but its functionality requires iOS 10 or higher. If compiling for iOS 9, make sure to programmatically check the version of iOS running on the device before using any camera plugin features.
+ *    android: Change the minimum Android sdk version to 21 (or higher)
+ */
