@@ -44,6 +44,7 @@ class BNavigationBar extends StatelessWidget {
             case 2: // ranking
               break;
             case 3: // profile
+              Navigator.of(context).popAndPushNamed('/profile');
               break;
           }
         }
