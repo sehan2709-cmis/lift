@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lift/state_management/ApplicationState.dart';
+import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
@@ -36,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
     final simpleAppState =
         Provider.of<ApplicationState>(context, listen: false);
 
+
     return Scaffold(
       // appBar: AppBar(
       //   title: Text("LOGIN"),
@@ -67,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = signInWithGoogle();
                   if (await login_sucess) {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popAndPushNamed('/');
                   }
                 },
               ),
@@ -75,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = anonymousSignIn();
                   if (await login_sucess) {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popAndPushNamed('/');
                   }
                 },
                 child: Text("Anonymous Login"),

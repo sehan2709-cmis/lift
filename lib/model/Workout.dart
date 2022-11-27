@@ -1,28 +1,13 @@
+import 'package:lift/model/Exercise.dart';
+
 class Workout {
-  Workout(this.workout);
+  Workout(
+    this._CreateDate,
+    this._Exercises,
+  );
+  final String _CreateDate;
+  final List<Exercise> _Exercises;
 
-  // field is not fixed value
-  final workout;
-
-  // data structure
-  /*
-  [
-    {'name1':[
-      {
-        'weight':10,
-        'reps':9,
-      },
-      {
-      'weight':10,
-      'reps':9,
-      },
-    ],
-    'name2':[
-      {
-        'weight':20,
-        'reps':5,
-      },
-    ]},
-  ]
-  */
+  String get CreateDate => _CreateDate;
+  List<Exercise> get Exercises => _Exercises;
 }

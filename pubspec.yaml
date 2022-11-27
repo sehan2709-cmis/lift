@@ -43,6 +43,7 @@ dependencies:
   google_sign_in: ^5.4.2
   firebase_ui_auth: ^1.0.6
   animated_text_kit: ^4.2.2
+  cloud_firestore: ^4.1.0
 
 dev_dependencies:
   flutter_test:
