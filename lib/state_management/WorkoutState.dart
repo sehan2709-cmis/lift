@@ -68,8 +68,31 @@ class WorkoutState extends ChangeNotifier {
     db?.collection(uid!).add(data);
 
     // calculate total volume of the day and add it to Rankings collection
-    // db.collection("Ranking").doc(uid).
-
+    // update ranking data when adding workout
+    // for now assume that data added cannot be modified
+    int totalVolume = 0;
+    for(final exercise in workout.exercises){
+      for(final set in exercise.Sets){
+        totalVolume += set['weight']! * set['reps']!;
+      }
+    }
+    final rankingRef = db?.collection("Ranking").doc(uid!);
+    rankingRef?.get().then(
+            (DocumentSnapshot doc) {
+              if(!doc.exists){
+                // upload new value
+                rankingRef?.set({
+                  "totalVolume": totalVolume
+                });
+              }
+              else{
+                totalVolume += doc.get('totalVolume') as int;
+                rankingRef?.set({
+                  "totalVolume": totalVolume
+                });
+              }
+            }
+    );
   }
 
   void workoutQueryOnce() {
