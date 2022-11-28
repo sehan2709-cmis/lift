@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lift/navigation_bar/bottom_navigation_bar.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +24,12 @@ class Profile extends StatelessWidget {
 
         actions: [
           SignedOutAction((context) {
+            GoogleSignIn().signOut();
+            FirebaseAuth.instance.signOut();
             Navigator.of(context).popAndPushNamed('/login');
           }),
         ],
-        showMFATile: true,
+        // showMFATile: true,
       ),
     );
   }

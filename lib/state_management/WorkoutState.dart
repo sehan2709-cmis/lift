@@ -14,38 +14,91 @@ class WorkoutState extends ChangeNotifier {
   List<Workout> _workouts = [];
   List<Workout> get workouts => _workouts;
 
-  var db;
-  var uid;
+
+
+  FirebaseFirestore? db;
+  String? uid;
 
   WorkoutState() {
     log("Creating WorkoutState");
     init();
   }
 
+  double getTotalVolumeAtDate(String date){
+    double totalVolume = 0.0;
+    DateTime now = DateTime.parse(date);
+    DateTime today = DateTime(now.year, now.month, now.day);
+    DateTime tomorrow = DateTime(now.year, now.month, now.day+1);
+
+    for(final workout in workouts){
+      DateTime workoutDay = DateTime.parse(workout.CreateDate);
+      if(workoutDay.isAfter(today) && workoutDay.isBefore(tomorrow)) {
+        // log("${today}");
+        for(final exercise in workout.exercises){
+          for(final set in exercise.Sets){
+            totalVolume += set['weight']! * set['reps']!;
+            // log("${totalVolume} += ${set['weight']! * set['reps']!} (${set['weight']} * ${set['reps']})");
+          }
+        }
+      }
+    }
+    return totalVolume;
+  }
+
   Future<void> init() async {
     await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform);
     uid = FirebaseAuth.instance.currentUser?.uid;
     db = FirebaseFirestore.instance;
-    // Workout workout = Workout("", []);
-    // workout.exercises.add(Exercise("Barbell Curl").addSet(20, 10).addSet(20, 11).addSet(20, 12));
-    // workout.exercises.add(Exercise("Tricep Extension").addSet(30, 20).addSet(30, 20).addSet(25, 20));
-    // addWorkout(workout);
     workoutQueryOnce();
+  }
+
+  void addSampleWorkout(){
+    for(int i=0; i<5; i++){
+      Workout workout = Workout("", []);
+      workout.exercises.add(Exercise("Squat").addSet(100, 10).addSet(110, 8).addSet(120, 5));
+      workout.exercises.add(Exercise("Bench Press").addSet(80, 10).addSet(70, 12).addSet(60, 16));
+      addWorkout(workout);
+    }
   }
 
   void addWorkout(Workout workout) {
     final data = workout.data();
     data["CreateDate"] = FieldValue.serverTimestamp();  // override to server timestamp
-    //TODO: change to uid
-    log(data.toString());
-    db.collection('<user-uid>')
-        .add(data);
+    // log(data.toString());
+    db?.collection(uid!).add(data);
+
+    // calculate total volume of the day and add it to Rankings collection
+    // update ranking data when adding workout
+    // for now assume that data added cannot be modified
+    int totalVolume = 0;
+    for(final exercise in workout.exercises){
+      for(final set in exercise.Sets){
+        totalVolume += set['weight']! * set['reps']!;
+      }
+    }
+    final rankingRef = db?.collection("Ranking").doc(uid!);
+    rankingRef?.get().then(
+            (DocumentSnapshot doc) {
+              if(!doc.exists){
+                // upload new value
+                rankingRef?.set({
+                  "totalVolume": totalVolume
+                });
+              }
+              else{
+                totalVolume += doc.get('totalVolume') as int;
+                rankingRef?.set({
+                  "totalVolume": totalVolume
+                });
+              }
+            }
+    );
   }
 
   void workoutQueryOnce() {
     if(uid == null) return;
     log("Trying to get collection of user id: ${uid}");
-    db.collection("<user-uid>").orderBy('CreateDate', descending: true).get().then(
+    db?.collection(uid!).orderBy('CreateDate', descending: true).get().then(
           (res) {
             // res will contain all of the documents of user collection
             // final data = doc.data() as Map<String, dynamic>;
@@ -79,7 +132,6 @@ class WorkoutState extends ChangeNotifier {
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? workoutQueryStream() {
     log("Downloading user's workout data from firebase");
-
 
     if(uid == null) return null;
 
