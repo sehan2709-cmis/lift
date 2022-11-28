@@ -1,4 +1,12 @@
+import 'dart:math' as math;
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:draw_graph/draw_graph.dart';
+import 'package:draw_graph/models/feature.dart';
 import 'package:flutter/material.dart';
+import 'package:lift/state_management/WorkoutState.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import 'navigation_bar/bottom_navigation_bar.dart';
 
@@ -12,12 +20,82 @@ class DataPage extends StatefulWidget {
 class _DataPageState extends State<DataPage> {
   @override
   Widget build(BuildContext context) {
+    // WorkoutState workoutState = Provider.of<WorkoutState>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Data"),
       ),
       body: SafeArea(
-        child: Text("body"),
+        child: ListView(
+          physics: const ScrollPhysics(),
+          shrinkWrap: true,
+          children: [
+            // 실시간 업데이트 될 필요는 없기 때문에 Consumer를 사용하지 않아도 되긴 하다.
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Consumer<WorkoutState>(
+                builder: (BuildContext context, workoutState, Widget? child) {
+
+                  int range = 7;
+
+                  List<double> data = [];
+                  List<String> labelX = []; // date
+                  List<String> labelY = []; // volume
+                  
+                  DateTime now = DateTime.now();
+
+                  double maxVolume = 0;
+                  for(int i=range-1; i>=0; i--){
+                    DateTime date = DateTime(now.year, now.month, now.day-i);
+                    final dateString = DateFormat("yyyy-MM-dd").format(date);
+                    labelX.add(DateFormat('M/d').format(date).replaceAll('/', '/\n'));
+                    double volumeAtDate = workoutState.getTotalVolumeAtDate(dateString);
+                    data.add(volumeAtDate);
+                    maxVolume = math.max(volumeAtDate, maxVolume);
+                  }
+                  for(int i=1; i<=data.length; i++){
+                    double number = (maxVolume*(0.2*i));
+                    if(number >= 1000){
+                      number /= 1000;
+                      labelY.add("${number.toStringAsPrecision(2)}K");
+                    }
+                    else {
+                      labelY.add("${number.toInt()}");
+                    }
+
+                  }
+                  // normalize data
+                  for(int i=0; i<data.length; i++){
+                     data[i] /= maxVolume;
+                  }
+                  // log("length of labelY [] is ${data.length}");
+
+                  // final totalVolumeOfDay = workoutState.workouts.
+                  // Timestamp.now() < Timestamp.fromDate(DateTime.parse(formattedString))
+
+                  return LineGraph(
+                    features: [
+                      Feature(
+                        title: "Total Volume",
+                        color: Colors.deepPurpleAccent,
+                        data: data,
+                      ),
+                    ],
+                    size: Size(400, 400),
+                    labelX: labelX,
+                    labelY: labelY,
+                    showDescription: true,
+                    graphColor: Colors.black,
+                    graphOpacity: 0.2,
+                    verticalFeatureDirection: true,
+                    descriptionHeight: 130,
+                  );
+                },
+              ),
+            ),
+            
+          ],
+        )
       ),
       bottomNavigationBar: BNavigationBar(),
     );

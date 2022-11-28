@@ -31,6 +31,9 @@ class _HomePageState extends State<HomePage> {
           // mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text("WELCOME HOME"),
+            TextButton(onPressed: (){
+              Navigator.of(context).pushNamed('/posedemo');
+            }, child: Text("Pose Detection"),),
           ],
         ),
       ),
