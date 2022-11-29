@@ -12,25 +12,96 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
 class _HomePageState extends State<HomePage> {
-  // FirebaseFirestore.instance.collection("user");
+  // 실시간 업데이트 하지 말고 그냥 페이지가 새로 만들어질 때 자료 받아오기
   List<Map<String, dynamic>> gallery = [];
-  // 실시간 업데이트 하지 말고 그냥 페이지가 새로 만들어질 때만 자료를 받아오는 식으로 하는게 좋을 것 같다
-  // FirebaseFirestore.instance.
-  // FirebaseFirestore.instance.collection("User").doc(FirebaseAuth.instance.currentUser!.uid);
-  //     .get().then((DocumentSnapshot doc) {
-  // // if gallery doesn't exists
-  // if (!doc.exists || doc.get("gallery") == null) {
-  // const <StatelessWidget>[];
-  // }
-  // doc.get("gallery")
-  // });
-  List<StatelessWidget> _buildGridCards(BuildContext context, List<dynamic> gallery) {
-    if(gallery.isEmpty) {
+
+  List<StatelessWidget> _buildGridCards(
+      BuildContext context, List<Map<String, dynamic>> gallery) {
+    final ThemeData theme = Theme.of(context);
+
+    if (gallery.isEmpty) {
       return const <StatelessWidget>[];
     }
-    return gallery.map((item) {
+    return gallery.map((Map<String, dynamic> item) {
+      final imgUrl = item["imageUrl"].toString();
+      final memo = item["memo"].toString();
+      final timeCreated = item["timeCreated"].toString();
+      final timeModified = item["timeModified"].toString();
+
       return Card(
+        clipBehavior: Clip.antiAlias,
+        // TODO: Adjust card heights (103)
+        child: Stack(
+          children: [
+            Column(
+              // TODO: Center items on the card (103)
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                AspectRatio(
+                  aspectRatio: 18 / 11,
+                  child: Image.network(
+                    imgUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+                    child: Column(
+                      // TODO: Align labels to the bottom and center (103)
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      // TODO: Change innermost Column (103)
+                      children: <Widget>[
+                        // TODO: Handle overflowing labels (103)
+                        Text(
+                          timeCreated,
+                          style: theme.textTheme.headline6,
+                          maxLines: 1,
+                        ),
+                        const SizedBox(height: 8.0),
+                        Text(
+                          "hi",
+                          style: theme.textTheme.subtitle2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              alignment: Alignment.bottomRight,
+              child: TextButton(
+                onPressed: () {
+                  // simpleAppState.currentProduct = product;
+                  // Navigator.of(context).pushNamed('/detail');
+                },
+                child: const Text("more"),
+              ),
+            ),
+            Visibility(
+              visible: true,
+              child: Container(
+                alignment: Alignment.topRight,
+                child: const Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }).toList();
 
@@ -40,8 +111,31 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    NavigationState _navigationState = Provider.of<NavigationState>(context);
-    // BNavigationBar nevi = new BNavigationBar();
+    /// 패이지가 로드 될 때마다 Firebase에서 데이터를 읽어 온다
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance
+        .collection('User')
+        .doc(uid)
+        .collection("Gallery")
+        .get()
+        .then((res) {
+          log("HOME :: Reading Gallery data from firebase");
+      res.docs; // list of all the documents
+      if (res.docs.isEmpty) {
+        setState(() {
+          gallery = const <StatelessWidget>[].cast<Map<String, dynamic>>();
+        });
+      } else {
+        log("HOME :: Gallery item(s) found!");
+        // gallery.clear(); // Cannot change the length of an unmodifiable list ???
+        gallery = []; /// initialize gallery
+        for (final doc in res.docs) {
+          gallery.add(doc.data());
+        }
+
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text("home"),
@@ -56,6 +150,12 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         children: [
           Text("WELCOME HOME"),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/addImagePage');
+            },
+            child: Text("addImage"),
+          ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pushNamed('/posedemo');
@@ -111,12 +211,4 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BNavigationBar(),
     );
   }
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<HomePage> createState() => _HomePageState();
 }

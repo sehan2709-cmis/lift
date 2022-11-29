@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:lift/addImage.dart';
 import 'package:lift/login.dart';
 import 'package:lift/pose_detection.dart';
 import 'package:lift/pose_detector_view.dart';
@@ -46,7 +47,8 @@ class App extends StatelessWidget {
         // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
         initialRoute: loggedIn?'/':'/login',
         routes: {
-          '/': (context) => const HomePage(title: "HOME"),
+          '/': (context) => const HomePage(),
+          '/addImagePage': (context) => const AddImagePage(),
           '/login': (context) => const LoginPage(),
           '/profile': (context) => Profile(),
           '/datapage': (context) => DataPage(),
