@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -69,6 +70,9 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = signInWithGoogle();
                   if (await login_sucess) {
+                    if(await checkFirstLogin()){
+                      createUserDoc();
+                    }
                     Navigator.of(context).pop();
                   }
                 },
@@ -77,6 +81,9 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () async {
                   final login_sucess = anonymousSignIn();
                   if (await login_sucess) {
+                    if(await checkFirstLogin()){
+                      createUserDoc();
+                    }
                     Navigator.of(context).pop();
                   }
                 },
@@ -138,4 +145,25 @@ class _LoginPageState extends State<LoginPage> {
     // if (!mounted) return;
     // Navigator.of(context).pop();
   }
+
+  Future<bool> checkFirstLogin() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final doc = await FirebaseFirestore.instance.collection("User").doc(uid).get();
+    if(doc.exists){
+      log("LOGIN :: User already exists");
+      return false;
+    }
+    else {
+      log("LOGIN :: User is first time");
+      return true;
+    }
+  }
+
+  Future<void> createUserDoc() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final userRef = FirebaseFirestore.instance.collection("User").doc(uid);
+    // set "firstLoginTime" as current server time
+    userRef.set({"firstLoginTime":FieldValue.serverTimestamp()});
+  }
+
 }
