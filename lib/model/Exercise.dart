@@ -6,8 +6,8 @@ class Exercise {
   final List<Map<String, int>> _Sets = [];
   // _Sets contains
   // [
-  //  {"weight":10, "reps":10},
-  //  {"weight":10, "reps":10},
+  //  {"weight":10, "reps":10, "done":0},
+  //  {"weight":10, "reps":10, "done":1},
   //   ...
   // ]
 
