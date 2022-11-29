@@ -45,7 +45,7 @@ class App extends StatelessWidget {
         // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
         initialRoute: loggedIn?'/':'/login',
         routes: {
-          '/': (context) => const HomePage(title: "HOME"),
+          '/': (context) => const HomePage(),
           '/login': (context) => const LoginPage(),
           '/profile': (context) => Profile(),
           '/datapage': (context) => DataPage(),
