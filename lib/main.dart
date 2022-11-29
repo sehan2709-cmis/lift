@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:camera/camera.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lift/state_management/CameraState.dart';
@@ -8,21 +11,24 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 import 'state_management/ApplicationState.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 List<CameraDescription> cameras = [];
-Future<void> main() async {
-  // runApp(const App());
 
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() async {
+  // flutter pub run flutter_native_splash:create
+  // to save splash screen detail
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   cameras = await availableCameras();
+  User? user = FirebaseAuth.instance.currentUser;
+  bool loggedIn = (user != null)?true:false;
+  log("MAIN :: ${user!}");
 
   runApp(
-   // ChangeNotifierProvider(
-   //    create: (context) => ApplicationState(),
-   //    // if App() is set to const, then ApplicationStete() init() is not passed on... why?
-   //    builder: ((context, child) => App()),
-   //  )
-
     MultiProvider(
         providers: [
           ChangeNotifierProvider(
@@ -34,9 +40,10 @@ Future<void> main() async {
           ChangeNotifierProvider(
               create: (BuildContext context) => CameraState()),
         ],
-        builder: ((context, child) => App()),
+        builder: ((context, child) => App(loggedIn:loggedIn)),
     )
   );
+
 }
 
 /**
