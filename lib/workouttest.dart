@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lift/model/Exercise.dart';
 import 'package:lift/model/Workout.dart';
@@ -17,17 +18,21 @@ class WorkoutTest extends StatefulWidget {
 }
 
 List<Exercise> todayWorkout = [];
-Workout workout = Workout("", [
-  Exercise("Squat"),
-  Exercise("Bench Press"),
-  Exercise("Dead Lift")
-]);
+Workout workout = Workout("", []);
+List<TextEditingController> weightControl = [];
+List<TextEditingController> repsControl = [];
 
 class _WorkoutTest extends State<WorkoutTest> {
-  @override
+  final addWorkout = TextEditingController();
 
-  List<Row> _buildSet(Exercise exercise){
-    int count = 1;
+  @override
+  void dispose() {
+    addWorkout.dispose();
+    super.dispose();
+  }
+  List<Row> _buildSet(Exercise exercise, List<TextEditingController> weightControl, List<TextEditingController> repsControl){
+    print("wieghtControl length = ${weightControl.length}, repsControl length = ${repsControl.length}");
+    int count = 0;
     if (exercise.Sets.isEmpty) {
       return const <Row>[];
     }
@@ -36,11 +41,12 @@ class _WorkoutTest extends State<WorkoutTest> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text("${count++}"),
+          Text("${++count}"),
           SizedBox(
             width: 70,
             height: 30,
             child: TextFormField(
+              controller: weightControl[count-1],
               decoration: InputDecoration(
                 labelText: "kg",
                 border: OutlineInputBorder(),
@@ -51,6 +57,7 @@ class _WorkoutTest extends State<WorkoutTest> {
             width: 70,
             height: 30,
             child: TextFormField(
+              controller: repsControl[count-1],
               decoration: InputDecoration(
                 labelText: "reps",
                 border: OutlineInputBorder(),
@@ -58,107 +65,182 @@ class _WorkoutTest extends State<WorkoutTest> {
             ),
           ),
           IconButton(onPressed: (){
-            set['weight'] = 23;
-            set['reps'] = 30;
+            try { //현제 count-1 을 해서 다른 check 버튼을 눌러도 마지막 값이 출력되는 상황.
+              set['weight'] = int.parse(weightControl[count-1].text); //Exercise에 index 추가해야함
+              set['reps'] = int.parse(repsControl[count-1].text);//Exercise에 index 추가해야함
+              print("weight: ${weightControl[count-1].text}, reps: ${repsControl[count-1].text}");
+            }
+            catch(e) {
+              print(e);
+            }
           }, icon: Icon(Icons.check_box)),
         ],
       );
     }).toList();
-  }
+  }//운동별 세트
 
-  List<Card> _buildCards(BuildContext context) {
-    List<Exercise> exerciseList = workout.exercises;
+  List<Widget> _buildCards(BuildContext context) {
 
-    if (exerciseList.isEmpty) {
+    if (workout.exercises.isEmpty) {
       return const <Card>[];
     }
 
-    return exerciseList.map((exercise) {
-      return Card(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)
-        ),
-        elevation: 6.0,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return workout.exercises.map((exercise) {
+      return Column(
+        children: [
+          Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)
+            ),
+            elevation: 6.0,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.info_outline)),
-                  Text(exercise.Name),
-                  OutlinedButton(
-                    onPressed: () {},
-                    child: Text('Records'),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      IconButton(
+                          onPressed: () => showDialog<String>(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              scrollable: true,
+                              title: Text('${exercise.Name}'),
+                              content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Work Out Name: ${exercise.Name}'),
+                                  SizedBox(height: 10,),
+                                  MaterialButton( //search on color
+                                    shape: OutlineInputBorder(
+                                        borderRadius: new BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: Color(0xFF545454)),
+                                    ),
+                                    onPressed: () {},
+                                    child: Container(
+                                      child: RichText(
+                                        text: const TextSpan(children:[
+                                          TextSpan(
+                                            text: 'Search on ',
+                                            style: TextStyle(color: Color(0xFF9B9B9B)),
+                                          ),
+                                          TextSpan(
+                                            text: 'G',
+                                            style: TextStyle(color: Color(0xFF176BEF)),
+                                          ),
+                                          TextSpan(
+                                            text: 'o',
+                                            style: TextStyle(color: Color(0xFFFF3E30)),
+                                          ),
+                                          TextSpan(
+                                            text: 'o',
+                                            style: TextStyle(color: Color(0xFFF7B529)),
+                                          ),
+                                          TextSpan(
+                                            text: 'g',
+                                            style: TextStyle(color: Color(0xFF176BEF)),
+                                          ),
+                                          TextSpan(
+                                            text: 'l',
+                                            style: TextStyle(color: Color(0xFF129C52)),
+                                          ),
+                                          TextSpan(
+                                            text: 'e',
+                                            style: TextStyle(color: Color(0xFFFF3E30)),
+                                          ),
+                                        ]
+                                        ),//google with color
+                                      ),
+                                    ), //search google pretty colors
+                                  ),
+                                ],
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          ),
+                          icon: Icon(Icons.info_outline)),
+                      Text(exercise.Name),
+                      IconButton(
+                          onPressed: (){
+                            setState(() {
+                              workout.exercises.remove(exercise);
+                            });
+                          },
+                          icon: Icon(CupertinoIcons.trash)),
+                    ],
+                  ),//top part
+                  Divider(thickness: 2,),
+                  SizedBox(height: 10,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Text("set"), Text("kg"), Text("reps"), Text("done"),
+                    ],
+                  ), //number weight reps check buttons
+                  Column(
+                    children: _buildSet(exercise, weightControl, repsControl),
                   ),
-                ],
-              ),
-              Divider(thickness: 2,),
-              SizedBox(height: 10,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Text("set"), Text("kg"), Text("reps"), Text("done"),
-                ],
-              ),
-              Column(
-                children: _buildSet(exercise),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  MaterialButton(
-                    shape: OutlineInputBorder(
-                        borderRadius: new BorderRadius.circular(12)
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        exercise.Sets.removeLast();
-                      });
-                    },
-                    child: Text(
-                      "--set",
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      MaterialButton(
+                        shape: OutlineInputBorder(
+                            borderRadius: new BorderRadius.circular(12)
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            exercise.Sets.removeLast();
+                            weightControl.removeLast();
+                            repsControl.removeLast();
+                          });
+                        },
+                        child: Text(
+                          "--set",
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
 
-                  ),//--set
-                  MaterialButton(
-                    shape: OutlineInputBorder(
-                        borderRadius: new BorderRadius.circular(12)
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        exercise.addSet(0, 0);
-                      });
-                    },
-                    child: Text(
-                      "++set",
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),//++set
+                      ),//--set
+                      MaterialButton(
+                        shape: OutlineInputBorder(
+                            borderRadius: new BorderRadius.circular(12)
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            print("1");
+                            exercise.addSet(0, 0);
+                            weightControl.add(TextEditingController());
+                            repsControl.add(TextEditingController());
+                            print("2");
+                          });
+                        },
+                        child: Text(
+                          "++set",
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),//++set
+                    ],
+                  )//++set--
                 ],
-              )//++set--
-            ],
+              ),
+            ),
           ),
-        ),
+          SizedBox(height: 20,)
+        ],
       );
     }).toList();
-  }
+  }//운동 이름
 
   Widget build(BuildContext context) {
     NavigationState _navigationState = Provider.of<NavigationState>(context);
@@ -181,7 +263,6 @@ class _WorkoutTest extends State<WorkoutTest> {
                 Column(
                   children: _buildCards(context),
                 ),
-                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -198,12 +279,40 @@ class _WorkoutTest extends State<WorkoutTest> {
                       shape: OutlineInputBorder(
                           borderRadius: new BorderRadius.circular(12)
                       ),
-                      onPressed: () {
-                        setState(() {
-                        });
-                      },
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          scrollable: true,
+                          title: Text('Add Workout'),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Exercise Name: '),
+                              SizedBox(height: 10,),
+                              TextField(
+                                controller: addWorkout,
+                              )
+                            ],
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'CANCEL'),
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  workout.exercises.add(Exercise(addWorkout.text));
+                                });
+                                Navigator.pop(context, 'ADD');
+                              },
+                              child: const Text('ADD'),
+                            ),
+                          ],
+                        ),
+                      ),
                       child: Text(
-                        "START",
+                        "ADD WORKOUT",
                         style: TextStyle(
                           color: Colors.black,
                         ),
