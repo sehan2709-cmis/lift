@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:lift/login.dart';
 import 'package:lift/pose_detection.dart';
 import 'package:lift/pose_detector_view.dart';
@@ -14,7 +15,9 @@ import 'home.dart';
 import 'state_management/ApplicationState.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  const App({super.key, required this.loggedIn});
+
+  final bool loggedIn;
 
   // This widget is the root of your application.
   @override
@@ -29,6 +32,9 @@ class App extends StatelessWidget {
       listen: false,
     );
 
+    // remove splash screen just before showing the initial screen
+    FlutterNativeSplash.remove();
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
         title: 'Lift',
@@ -38,7 +44,7 @@ class App extends StatelessWidget {
         // home: const HomePage(title: 'Lift'),
 
         // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
-        initialRoute: '/login',
+        initialRoute: loggedIn?'/':'/login',
         routes: {
           '/': (context) => const HomePage(title: "HOME"),
           '/login': (context) => const LoginPage(),
