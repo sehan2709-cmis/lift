@@ -16,6 +16,14 @@ class WorkoutState extends ChangeNotifier {
   List<Workout> get workouts => _workouts;
 
   List<Map<String, int>> ranking = [];
+  Map<String, List<String>> ranks = {};
+  int rankingSize = 0;
+  void resetRanks() {
+    ranks.clear();
+    ranks.addAll({"user":[], "totalVolume":[]});
+    rankingSize = 0;
+  }
+
   // LinkedHashMap<String, int> ranking = LinkedHashMap<String, int>();
   FirebaseFirestore? db;
   String? uid;
@@ -46,30 +54,33 @@ class WorkoutState extends ChangeNotifier {
     return totalVolume;
   }
 
-  void downloadRanking(){
-    List<Map<String, int>> ranking = [];
-
+  void downloadRanking() {
+    // reset the outdated ranking
+    ranking = [];
+    resetRanks();
     db?.collection('Ranking').orderBy('totalVolume', descending: true).get().then(
             (res) {
               if(res.size == 0){
-                log("no rankings");
-                ranking = [];
-                return;
+                log("no rankings"); return;
               }
               for (DocumentSnapshot doc in res.docs) {
+                // document id is user uid
+                // each document contains "totalVolume" field
+                /*
+                currently the ranking system will display user uid instead of nickname
+                however for security reasons this must be fixed if it is going to be released
+                 */
                 var data = doc.data() as Map<String, dynamic>;
-                // this.ranking = doc.data() as LinkedHashMap<String, int>;
-
-                log(data.entries.toString());
-                for (final entry in data.entries) {
-                  this.ranking.add(<String,int>{entry.key: entry.value});
-                }
-                log(this.ranking.toString());
-                log(this.ranking.length.toString());
+                data.entries.where((element) => element.key == "totalVolume");
+                ranks["user"]?.add(doc.id);
+                ranks["totalVolume"]?.add(data["totalVolume"].toString());
+                log("Ranks :: ${ranks.toString()}");
+                rankingSize++;
               }
+              notifyListeners();    // after successfully updating, need to notify listening widgets
             }
     );
-    // this.ranking = ranking;
+    // since above operation is asynchronous, notifyListeners() must be called inside
   }
 
   Future<void> init() async {
