@@ -17,15 +17,16 @@ class WorkoutTest extends StatefulWidget {
 }
 
 List<Exercise> todayWorkout = [];
-Workout workout = Workout("", [
-  Exercise("Squat"),
-  Exercise("Bench Press"),
-  Exercise("Dead Lift")
-]);
+Workout workout = Workout("", []);
 
 class _WorkoutTest extends State<WorkoutTest> {
-  @override
+  final addWorkout = TextEditingController();
 
+  @override
+  void dispose() {
+    addWorkout.dispose();
+    super.dispose();
+  }
   List<Row> _buildSet(Exercise exercise){
     int count = 1;
     if (exercise.Sets.isEmpty) {
@@ -67,13 +68,11 @@ class _WorkoutTest extends State<WorkoutTest> {
   }
 
   List<Card> _buildCards(BuildContext context) {
-    List<Exercise> exerciseList = workout.exercises;
-
-    if (exerciseList.isEmpty) {
+    if (workout.exercises.isEmpty) {
       return const <Card>[];
     }
 
-    return exerciseList.map((exercise) {
+    return workout.exercises.map((exercise) {
       return Card(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)
@@ -89,18 +88,47 @@ class _WorkoutTest extends State<WorkoutTest> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
-                      onPressed: () {},
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          scrollable: true,
+                          title: Text('${exercise.Name}'),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Work Out Name: ${exercise.Name}'),
+                              SizedBox(height: 10,),
+                              MaterialButton(
+                                shape: OutlineInputBorder(
+                                    borderRadius: new BorderRadius.circular(12)
+                                ),
+                                onPressed: () {},
+                                child: Text(
+                                  "Search on Google",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      ),
                       icon: Icon(Icons.info_outline)),
                   Text(exercise.Name),
-                  OutlinedButton(
-                    onPressed: () {},
-                    child: Text('Records'),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                  IconButton(
+                      onPressed: (){
+                        setState(() {
+                          workout.exercises.remove(exercise);
+                        });
+                      },
+                      icon: Icon(CupertinoIcons.trash)),
                 ],
               ),
               Divider(thickness: 2,),
@@ -198,12 +226,40 @@ class _WorkoutTest extends State<WorkoutTest> {
                       shape: OutlineInputBorder(
                           borderRadius: new BorderRadius.circular(12)
                       ),
-                      onPressed: () {
-                        setState(() {
-                        });
-                      },
+                      onPressed: () => showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          scrollable: true,
+                          title: Text('Add Workout'),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Exercise Name: '),
+                              SizedBox(height: 10,),
+                              TextField(
+                                controller: addWorkout,
+                              )
+                            ],
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'CANCEL'),
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  workout.exercises.add(Exercise(addWorkout.text));
+                                });
+                                Navigator.pop(context, 'ADD');
+                              },
+                              child: const Text('ADD'),
+                            ),
+                          ],
+                        ),
+                      ),
                       child: Text(
-                        "START",
+                        "ADD WORKOUT",
                         style: TextStyle(
                           color: Colors.black,
                         ),
