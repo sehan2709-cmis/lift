@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
       return const <StatelessWidget>[];
     }
     return gallery.map((Map<String, dynamic> item) {
-      final imgUrl = item["imgUrl"].toString();
+      final imgUrl = item["imageUrl"].toString();
       final memo = item["memo"].toString();
       final timeCreated = item["timeCreated"].toString();
       final timeModified = item["timeModified"].toString();
@@ -119,16 +119,20 @@ class _HomePageState extends State<HomePage> {
         .collection("Gallery")
         .get()
         .then((res) {
+          log("HOME :: Reading Gallery data from firebase");
       res.docs; // list of all the documents
       if (res.docs.isEmpty) {
         setState(() {
           gallery = const <StatelessWidget>[].cast<Map<String, dynamic>>();
         });
       } else {
-        gallery.clear(); /// initialize gallery
+        log("HOME :: Gallery item(s) found!");
+        // gallery.clear(); // Cannot change the length of an unmodifiable list ???
+        gallery = []; /// initialize gallery
         for (final doc in res.docs) {
           gallery.add(doc.data());
         }
+
       }
     });
 

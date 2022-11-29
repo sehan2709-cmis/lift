@@ -38,9 +38,9 @@ class _AddImagePageState extends State<AddImagePage> {
   @override
   Widget build(BuildContext context) {
     // final simpleAppState = Provider.of<ApplicationState>(context, listen: false);
-
     // _productNameTextController.text = "hi";
     Future<void> addDataToFirebase() async {
+      var imageURL;
       if(image != null) {
         // 1. Upload image to storage and get the image public url
         // this requires path_provider package
@@ -68,7 +68,7 @@ class _AddImagePageState extends State<AddImagePage> {
             .putFile(file, metadata);
 
         // Get public url of the uploaded image
-        final imageURL = (await uploadTask.ref.getDownloadURL()).toString();
+        imageURL = (await uploadTask.ref.getDownloadURL()).toString();
         log("image URL is $imageURL");
 
         image_url_to_upload = imageURL;
@@ -100,7 +100,7 @@ class _AddImagePageState extends State<AddImagePage> {
       FirebaseFirestore.instance
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
-            'Gallery': "",
+            'imageUrl': "$imageURL",
             'memo': "",
             'timeCreated': FieldValue.serverTimestamp(),
             'timeModified': FieldValue.serverTimestamp(),
