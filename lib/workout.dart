@@ -10,15 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Workout extends StatefulWidget {
+
   @override
   State<Workout> createState() => _Workout();
 }
 
-class _Workout extends State<Workout> {
-  int _squatset = 1;
-  int _benchset = 1;
-  int _deadset = 1;
+int _squatset = 1;
+int _benchset = 1;
+int _deadset = 3;
 
+class _Workout extends State<Workout> {
   @override
 
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class _Workout extends State<Workout> {
     return Scaffold(
       appBar: AppBar(
         title: Text("work out"),
+        leading: Text("         ${_deadset}"),
         elevation: 6.0,
       ),
       body: ListView(
@@ -256,18 +258,8 @@ class _Workout extends State<Workout> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 30,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: "add note",
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20)
-                          ),
-                        ),
-                      ),
+                    Divider(
+                      thickness: 2,
                     ),
                     SizedBox(height: 10,),
                     Row(
@@ -510,7 +502,11 @@ class _Workout extends State<Workout> {
                   shape: OutlineInputBorder(
                       borderRadius: new BorderRadius.circular(12)
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    _deadset++;
+                    setState(() {
+                    });
+                  },
                   child: Text(
                     "START",
                     style: TextStyle(

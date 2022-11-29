@@ -7,6 +7,7 @@ import 'package:lift/ranking.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/profile.dart';
 import 'package:lift/workout.dart';
+import 'package:lift/workouttest.dart';
 import 'package:provider/provider.dart';
 import 'data.dart';
 import 'home.dart';
@@ -44,7 +45,7 @@ class App extends StatelessWidget {
           '/profile': (context) => Profile(),
           '/datapage': (context) => DataPage(),
           '/ranking': (context) => Ranking(),
-          '/workout': (context) => Workout(),
+          '/workout': (context) => WorkoutTest(),
           '/posepage': (context) => PoseDetectionPage(),
           '/posedemo': (context) => PoseDetectorView(),
           // '/ranking': (context) => const RankingPage(),
