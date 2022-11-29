@@ -30,14 +30,18 @@ class _DataPageState extends State<DataPage> {
           physics: const ScrollPhysics(),
           shrinkWrap: true,
           children: [
-            // 실시간 업데이트 될 필요는 없기 때문에 Consumer를 사용하지 않아도 되긴 하다.
+
             Padding(
               padding: EdgeInsets.all(10),
               child: Consumer<WorkoutState>(
                 builder: (BuildContext context, workoutState, Widget? child) {
-
+                  /**
+                   * range는 오늘을 포함해서 가져올 최대 과거 날짜를 의미한다
+                   */
                   int range = 7;
-
+                  /**
+                   * Graph와 관련된 List는 과거->현재 순으로 데이터가 들어가 있어야 한다
+                   */
                   List<double> data = [];
                   List<String> labelX = []; // date
                   List<String> labelY = []; // volume
@@ -57,6 +61,9 @@ class _DataPageState extends State<DataPage> {
                     double number = (maxVolume*(0.2*i));
                     if(number >= 1000){
                       number /= 1000;
+                      /**
+                       * totalVolume은 뒤에 K를 붙여 1000단위로 보여준다
+                       */
                       labelY.add("${number.toStringAsPrecision(2)}K");
                     }
                     else {
