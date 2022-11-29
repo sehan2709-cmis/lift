@@ -52,6 +52,7 @@ dependencies:
   flutter_native_splash: ^2.2.16
   flutter_heatmap_calendar: ^1.0.5
   firebase_storage: ^11.0.6
+  cross_file_image: ^1.0.0
 
 dev_dependencies:
   flutter_test:
