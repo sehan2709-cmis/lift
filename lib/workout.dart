@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:lift/state_management/NavigationState.dart';
+import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 
 import 'navigation_bar/bottom_navigation_bar.dart';
@@ -22,6 +23,7 @@ class _Workout extends State<Workout> {
 
   Widget build(BuildContext context) {
     NavigationState _navigationState = Provider.of<NavigationState>(context);
+    WorkoutState _workout = Provider.of<WorkoutState>(context);
     // BNavigationBar nevi =
 
     // List<Widget> squatrow = new List.generate(_squatset, (int i) => new ContactRow());
@@ -55,6 +57,7 @@ class _Workout extends State<Workout> {
                             onPressed: () => showDialog<String>(
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
+                                scrollable: true,
                                 title: Text('LEG | SQUAT'),
                                 content: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,6 +76,18 @@ class _Workout extends State<Workout> {
                                     SizedBox(height: 5,),
                                     Text("03. Maintaining the upper body posture, push the ground with the feet and get up to return to the 1st position."),
                                     SizedBox(height: 10,),
+                                    MaterialButton(
+                                      shape: OutlineInputBorder(
+                                          borderRadius: new BorderRadius.circular(12)
+                                      ),
+                                      onPressed: () {},
+                                      child: Text(
+                                        "Search on YouTube",
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 actions: <Widget>[
@@ -199,6 +214,7 @@ class _Workout extends State<Workout> {
                             onPressed: () => showDialog<String>(
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
+                                scrollable: true,
                                 title: Text('Pecs | Bench Press'),
                                 content: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +524,9 @@ class _Workout extends State<Workout> {
                   shape: OutlineInputBorder(
                       borderRadius: new BorderRadius.circular(12)
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    _workout.addSampleWorkout();
+                  },
                   child: Text(
                     "FINISH",
                     style: TextStyle(
