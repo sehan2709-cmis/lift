@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,8 +15,8 @@ class WorkoutState extends ChangeNotifier {
   List<Workout> _workouts = [];
   List<Workout> get workouts => _workouts;
 
-
-
+  List<Map<String, int>> ranking = [];
+  // LinkedHashMap<String, int> ranking = LinkedHashMap<String, int>();
   FirebaseFirestore? db;
   String? uid;
 
@@ -45,12 +46,39 @@ class WorkoutState extends ChangeNotifier {
     return totalVolume;
   }
 
+  void downloadRanking(){
+    List<Map<String, int>> ranking = [];
+
+    db?.collection('Ranking').orderBy('totalVolume', descending: true).get().then(
+            (res) {
+              if(res.size == 0){
+                log("no rankings");
+                ranking = [];
+                return;
+              }
+              for (DocumentSnapshot doc in res.docs) {
+                var data = doc.data() as Map<String, dynamic>;
+                // this.ranking = doc.data() as LinkedHashMap<String, int>;
+
+                log(data.entries.toString());
+                for (final entry in data.entries) {
+                  this.ranking.add(<String,int>{entry.key: entry.value});
+                }
+                log(this.ranking.toString());
+                log(this.ranking.length.toString());
+              }
+            }
+    );
+    // this.ranking = ranking;
+  }
+
   Future<void> init() async {
     await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform);
     uid = FirebaseAuth.instance.currentUser?.uid;
     db = FirebaseFirestore.instance;
     workoutQueryOnce();
   }
+
 
   void addSampleWorkout(){
     for(int i=0; i<5; i++){
@@ -81,13 +109,13 @@ class WorkoutState extends ChangeNotifier {
             (DocumentSnapshot doc) {
               if(!doc.exists){
                 // upload new value
-                rankingRef?.set({
+                rankingRef.set({
                   "totalVolume": totalVolume
                 });
               }
               else{
                 totalVolume += doc.get('totalVolume') as int;
-                rankingRef?.set({
+                rankingRef.set({
                   "totalVolume": totalVolume
                 });
               }

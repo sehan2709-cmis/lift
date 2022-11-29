@@ -1,3 +1,6 @@
+import 'dart:collection';
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/navigation_bar/bottom_navigation_bar.dart';
@@ -15,13 +18,33 @@ class Ranking extends StatelessWidget {
     // Provider를 호출해 접근
     _navigationState = Provider.of<NavigationState>(context);
     WorkoutState workoutState = Provider.of<WorkoutState>(context);
+    workoutState.downloadRanking();
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Ranking"),
       ),
-      body:Text("ranking"),
+      body: ListView(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+
+              Text("UID"),
+              Text("Total Volume"),
+        Consumer<WorkoutState>(
+        builder: (BuildContext context, workoutState, Widget? child) {
+          return List<widgets>{};
+        }),
+
+
+            ],
+          ),
+
+        ],
+      ),
       bottomNavigationBar: BNavigationBar(),
     );
   }
+
 }
