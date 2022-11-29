@@ -112,8 +112,7 @@ class WorkoutState extends ChangeNotifier {
     final data = workout.data();
     data["CreateDate"] = FieldValue.serverTimestamp();  // override to server timestamp
     // log(data.toString());
-    String workoutCollectionName = "Workout_${uid!}";
-    db?.collection(workoutCollectionName).add(data);
+    db?.collection("User").doc(uid!).collection("Workout").add(data);
 
     // calculate total volume of the day and add it to Rankings collection
     // update ranking data when adding workout
@@ -150,8 +149,7 @@ class WorkoutState extends ChangeNotifier {
   void workoutQueryOnce() {
     if(uid == null) return;
     log("Trying to get collection of user id: ${uid}");
-    String workoutCollectionName = "Workout_${uid!}";
-    db?.collection(workoutCollectionName).orderBy('CreateDate', descending: true).get().then(
+    db?.collection("User").doc(uid!).collection("Workout").orderBy('CreateDate', descending: true).get().then(
           (res) {
             // res will contain all of the documents of user collection
             // final data = doc.data() as Map<String, dynamic>;
@@ -190,7 +188,7 @@ class WorkoutState extends ChangeNotifier {
 
     String workoutCollectionName = "Workout_${uid!}";
     return FirebaseFirestore.instance
-        .collection(workoutCollectionName)
+        .collection("User").doc(uid!).collection("Workout")
         .orderBy('CreateDate', descending: true)
         .snapshots()
         .listen((snapshot) {
