@@ -33,6 +33,7 @@ class WorkoutState extends ChangeNotifier {
     init();
   }
 
+  
   double getTotalVolumeAtDate(String date){
     double totalVolume = 0.0;
     DateTime now = DateTime.parse(date);
@@ -90,7 +91,9 @@ class WorkoutState extends ChangeNotifier {
     workoutQueryOnce();
   }
 
-
+  /**
+   * Demo of adding workout data to firebase
+   */
   void addSampleWorkout(){
     for(int i=0; i<5; i++){
       Workout workout = Workout("", []);
@@ -100,6 +103,11 @@ class WorkoutState extends ChangeNotifier {
     }
   }
 
+  /**
+   * Upload a workout to Firestore
+   * It creates document of a workout with random id
+   * Checks ranking data and updates it too
+   */
   void addWorkout(Workout workout) {
     final data = workout.data();
     data["CreateDate"] = FieldValue.serverTimestamp();  // override to server timestamp
@@ -134,6 +142,10 @@ class WorkoutState extends ChangeNotifier {
     );
   }
 
+  /**
+   * Get workout data of a user once
+   * it downloads all of the user's workout data
+   */
   void workoutQueryOnce() {
     if(uid == null) return;
     log("Trying to get collection of user id: ${uid}");
