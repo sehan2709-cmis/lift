@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cross_file_image/cross_file_image.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:provider/provider.dart';
 
 
@@ -20,8 +21,6 @@ class AddImagePage extends StatefulWidget {
 
 class _AddImagePageState extends State<AddImagePage> {
   final ImagePicker _picker = ImagePicker();
-  final _productNameTextController = TextEditingController();
-  final _priceTextController = TextEditingController();
   final _descriptionTextController = TextEditingController();
   XFile? image;
 
@@ -37,8 +36,8 @@ class _AddImagePageState extends State<AddImagePage> {
 
   @override
   Widget build(BuildContext context) {
-    // final simpleAppState = Provider.of<ApplicationState>(context, listen: false);
-    // _productNameTextController.text = "hi";
+    GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+
     Future<void> addDataToFirebase() async {
       var imageURL;
       if(image != null) {
@@ -141,6 +140,11 @@ class _AddImagePageState extends State<AddImagePage> {
                 // 0. Check if user added custom image
                 await addDataToFirebase();
                 log("done uploading!");
+
+                /// after successfully uploading image data to firebase
+                /// need to update Gallery
+                /// could use listener but don't think live update is necessary
+                simpleGalleryState.readGallery();
 
                 if (!mounted) return;
                 uploading = false;

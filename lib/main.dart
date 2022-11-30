@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lift/state_management/CameraState.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +38,8 @@ Future<void> main() async {
               create: (BuildContext context) => WorkoutState()),
           ChangeNotifierProvider(
               create: (BuildContext context) => CameraState()),
+          ChangeNotifierProvider(
+              create: (BuildContext context) => GalleryState()),
         ],
         builder: ((context, child) => App(loggedIn:loggedIn)),
     )
