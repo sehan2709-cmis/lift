@@ -9,7 +9,19 @@ import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
-class Ranking extends StatelessWidget {
+class Ranking extends StatefulWidget {
+  const Ranking({super.key});
+
+  @override
+  State<Ranking> createState() => _RankingState();
+}
+
+class _RankingState extends State<Ranking>
+    with AutomaticKeepAliveClientMixin<Ranking> {
+  /// below preserves the state of the tabs
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
     // 여기에 넣는 코드는 페이지가 로드 될 때마다 새로 실행된다
@@ -20,36 +32,65 @@ class Ranking extends StatelessWidget {
       log("downloaded");
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Ranking"),
-      ),
-      body: Consumer<WorkoutState>(
-        builder: (context, workoutState, _) => ListView(
-          children: [
-            // variable i need to keep increasing, so can't use final keyword here
-            for (var i=0; i<workoutState.rankingSize; i++)
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                      SizedBox(width: 50, child: Center(child: Text("${i+1}"),)),
-                      Expanded(
-                        flex: 5,
-                        child: Text("${workoutState.ranks["user"]?.elementAt(i)}"),
-                      ),
-                      Flexible(
-                        child: Text("${workoutState.ranks["totalVolume"]?.elementAt(i)}"),
-                      ),
-                  ],
-                ),
-              ),
-          ],
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Ranking"),
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(15),
+            child: TabBar(
+              // indicator: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(50), // Creates border
+              //     color: Colors.greenAccent),
+              indicatorWeight: 10,
+              tabs: [
+                Text("Volume"),
+                Text("1RM"),
+                Text("Streak"),
+              ],
+            ),
+          ),
         ),
+        body: Consumer<WorkoutState>(
+          builder: (context, workoutState, _) => TabBarView(
+            children: [
+              ListView(
+                children: [
+                  // variable i need to keep increasing, so can't use final keyword here
+                  for (var i = 0; i < workoutState.rankingSize; i++)
+                    Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                              width: 50,
+                              child: Center(
+                                child: Text("${i + 1}"),
+                              )),
+                          Expanded(
+                            flex: 5,
+                            child: Text(
+                                "${workoutState.ranks["user"]?.elementAt(i)}"),
+                          ),
+                          Flexible(
+                            child: Text(
+                                "${workoutState.ranks["totalVolume"]?.elementAt(i)}"),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              Text("1"),
+              Text("2"),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BNavigationBar(),
       ),
-      bottomNavigationBar: BNavigationBar(),
     );
   }
 }
