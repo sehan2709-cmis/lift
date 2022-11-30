@@ -13,14 +13,42 @@ class WorkoutState extends ChangeNotifier {
   List<Workout> _workouts = [];
   List<Workout> get workouts => _workouts;
 
-
-  /// {"total
+  /// {"totalVolume", "streak", "BSD-Max"}
   Map<String, List<String>> volumeRanking = {};
   int volumeRankingSize = 0;
+  int streak = 0;
   void resetVolumeRanking() {
     volumeRanking.clear();
     volumeRanking.addAll({"user": [], "totalVolume": []});
     volumeRankingSize = 0;
+  }
+
+  /// workoutDates
+  Map<DateTime, int> currentYearWorkoutDates = {};
+
+  /// currently it only downloads current year's data
+  void downloadWorkoutDates() async {
+    currentYearWorkoutDates.clear();
+    int year = 2022;
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
+        .instance
+        .collection("User")
+        .doc(uid)
+        .collection("WorkoutDates")
+        .doc("$year")
+        .get();
+    if(doc.exists) {
+      for (final month in doc.data()!.keys) {
+        List<dynamic> days = doc.get(month);
+        for(int i=0; i<days.length; i++){
+          if(days[i] == true){
+            currentYearWorkoutDates.addAll({DateTime(year, int.parse(month), i+1):13});
+          }
+        }
+      }
+    }
+    log("WS :: ${currentYearWorkoutDates.toString()}");
   }
 
   /// uid used here must be continuously updated when user changes
@@ -33,6 +61,7 @@ class WorkoutState extends ChangeNotifier {
   /// initializer
   WorkoutState() {
     log("Creating WorkoutState");
+
     /// FirebaseFirestore instance can only be use after initialization
     init();
   }
@@ -80,8 +109,19 @@ class WorkoutState extends ChangeNotifier {
     return totalVolume;
   }
 
+  /// downloads current streak
+  void getMyStreak() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot<Map<String, dynamic>> doc =
+        await FirebaseFirestore.instance.collection("User").doc(uid).get();
+    if (doc.data()!.containsKey("streak")) {
+      streak = doc.get("streak");
+    } else {
+      streak = 0;
+    }
+  }
 
-  /// change this to download all rankings
+  /// change this to download all rankings ??
   void downloadVolumeRanking() {
     // reset the outdated ranking
     resetVolumeRanking();
@@ -99,6 +139,7 @@ class WorkoutState extends ChangeNotifier {
                  */
         var data = doc.data() as Map<String, dynamic>;
         data.entries.where((element) => element.key == "totalVolume");
+
         /// if nickName exsits, use nickName instead of uid
         volumeRanking["user"]?.add(doc.id);
         volumeRanking["totalVolume"]?.add(data["totalVolume"].toString());
@@ -121,10 +162,12 @@ class WorkoutState extends ChangeNotifier {
     DocumentReference userDocRef = userCollectionRef.doc(uid);
 
     /// upload workout data
-    data["CreateDate"] = FieldValue.serverTimestamp(); // set to server timestamp
+    data["CreateDate"] =
+        FieldValue.serverTimestamp(); // set to server timestamp
     // <Map<String, dynamic>>
-    DocumentReference addedDocRef = await userDocRef.collection("Workout").add(data);
-    
+    DocumentReference addedDocRef =
+        await userDocRef.collection("Workout").add(data);
+
     /// calculate total volume of the workout
     int totalVolume = 0;
     for (final exercise in workout.exercises) {
@@ -135,22 +178,25 @@ class WorkoutState extends ChangeNotifier {
 
     /// Get timestamp of the added workout
     // <Map<String, dynamic>>
-    DocumentSnapshot addedDoc = await userDocRef.collection("Workout").doc(addedDocRef.id).get();
-    Timestamp uploadTimeStamp = addedDoc.get("CreateDate"); // this field must exist, since it is just added in the above code
+    DocumentSnapshot addedDoc =
+        await userDocRef.collection("Workout").doc(addedDocRef.id).get();
+    Timestamp uploadTimeStamp = addedDoc.get(
+        "CreateDate"); // this field must exist, since it is just added in the above code
     // DateTime uploadDateTime = DateTime.fromMicrosecondsSinceEpoch(uploadTimeStamp.microsecondsSinceEpoch);
     DateTime uploadDateTime = uploadTimeStamp.toDate();
     log("ADD :: ${uploadDateTime.toString()}");
 
     /// Update totalVolume
     DocumentSnapshot userDoc = await userDocRef.get();
-    try{
+    try {
       // log("******:${doc.get("totalVolume")}:******");
       totalVolume += userDoc.get('totalVolume') as int;
-    }catch(e){
+    } catch (e) {
       // log("there is no field");
-    }finally{
+    } finally {
       /// maybe doesn't really need to wait for finish uploading
-      await userDocRef.set({"totalVolume": totalVolume}, SetOptions(merge: true));
+      await userDocRef
+          .set({"totalVolume": totalVolume}, SetOptions(merge: true));
     }
 
     /// Update Workout Dates List
@@ -160,22 +206,25 @@ class WorkoutState extends ChangeNotifier {
     final month = uploadDateTime.month;
     final day = uploadDateTime.day;
     // first get data in firestore
-    DocumentSnapshot workoutYearDoc = await userDocRef.collection("WorkoutDates").doc("$year").get();
+    DocumentSnapshot workoutYearDoc =
+        await userDocRef.collection("WorkoutDates").doc("$year").get();
     List<bool> workoutMonth;
-    if(!workoutYearDoc.exists) {
+    if (!workoutYearDoc.exists) {
       workoutMonth = workoutYearDoc.get("$month");
-    }
-    else {
+    } else {
       workoutMonth = [];
     }
-    while(workoutMonth.length < day){
+    while (workoutMonth.length < day) {
       workoutMonth.add(false);
     }
     // set the last day (which is today) as true
     workoutMonth.last = true;
     // upload the new workoutDates data
     // merge allow other fields to remain as they are
-    await userDocRef.collection("WorkoutDates").doc("$year").set({"$month":workoutMonth}, SetOptions(merge: true));
+    await userDocRef
+        .collection("WorkoutDates")
+        .doc("$year")
+        .set({"$month": workoutMonth}, SetOptions(merge: true));
 
     /// just search for user workout? (SKIP THIS - this is just an idea)
     // userDocRef.collection("Workout")
@@ -190,38 +239,52 @@ class WorkoutState extends ChangeNotifier {
     // else it is reset to zero
     // need to check if last workout date field exists
     Timestamp lastWorkoutTimeStamp;
-    label: try{
+    label:
+    try {
       lastWorkoutTimeStamp = userDoc.get("lastWorkout");
       DateTime lastWorkoutDateTime = lastWorkoutTimeStamp.toDate();
-      DateTime u = DateTime(uploadDateTime.year, uploadDateTime.month, uploadDateTime.day);
-      DateTime p = DateTime(uploadDateTime.year, uploadDateTime.month, uploadDateTime.day-1);
-      DateTime w = DateTime(lastWorkoutDateTime.year, lastWorkoutDateTime.month, lastWorkoutDateTime.day);
-      if(u == w) {
+      DateTime u = DateTime(
+          uploadDateTime.year, uploadDateTime.month, uploadDateTime.day);
+      DateTime p = DateTime(
+          uploadDateTime.year, uploadDateTime.month, uploadDateTime.day - 1);
+      DateTime w = DateTime(lastWorkoutDateTime.year, lastWorkoutDateTime.month,
+          lastWorkoutDateTime.day);
+      if (u == w) {
         /// this means that the person workout out more than once at the same day
         /// this neither count nor reset workout streak
         break label;
       }
 
-      if(p == w) {
+      if (p == w) {
         /// this means that this user worked out in a row, so add up streak
         // get streak data
         int streak = userDoc.get("streak") as int;
         streak++;
         // update streak data
-        userDocRef.set({"streak":streak}, SetOptions(merge: true),);
+        userDocRef.set(
+          {"streak": streak},
+          SetOptions(merge: true),
+        );
       }
+
       /// !!!!!!!!!
       /// 처음에는 여기에서 streak를 초기화 하려고 했는데
       /// 생각해 보니 운동을 안하고 하루가 지나면 자동으로 reset 되도록 해야한다
       /// how to implement this...
       /// server side? (could use firebase functions but this requires upgrading pricing plan)
       // 일단 그래도 reset하기
-      userDocRef.set({"streak":0}, SetOptions(merge: true),);
-    }catch(e){
+      userDocRef.set(
+        {"streak": 0},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
       /// lastWorkout field 가 없다는 것은 workout을 처음 등록 했다는 것이고,
       /// 당연히 Streak 값도 없을 것이다
       /// lastWorkout field는 마지막에 업데이트 되니 여기서는 그냥 streak를 1로 만들어준다
-      userDocRef.set({"streak":1}, SetOptions(merge: true),);
+      userDocRef.set(
+        {"streak": 1},
+        SetOptions(merge: true),
+      );
     }
 
     /// Update SBD-Max
@@ -234,12 +297,14 @@ class WorkoutState extends ChangeNotifier {
     Map<String, dynamic> userDocData = userDoc.data() as Map<String, dynamic>;
     userDocData.containsKey("key");
 
-
     /// Update last workout date (only 1 workout counted per day)
     // create a field "lastWorkout" under user doc
     // after operating all other workout values, update this value to most recent workout date
     log("WS :: updating lastWorkout");
-    userDocRef.set({"lastWorkout":uploadTimeStamp}, SetOptions(merge: true),);
+    userDocRef.set(
+      {"lastWorkout": uploadTimeStamp},
+      SetOptions(merge: true),
+    );
   }
 
   /// Get workout data of a user once
@@ -281,7 +346,10 @@ class WorkoutState extends ChangeNotifier {
                   data['CreateDate'].millisecondsSinceEpoch)
               .toLocal()
               .toString();
-          final workout = Workout(createDate: createDate, exercises: exercises,);
+          final workout = Workout(
+            createDate: createDate,
+            exercises: exercises,
+          );
           _workouts.add(workout);
         }
         log(_workouts.toString());

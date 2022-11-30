@@ -11,6 +11,7 @@ import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/profile.dart';
 import 'package:lift/workout.dart';
 import 'package:lift/workouttest.dart';
+import 'package:local_hero/local_hero.dart';
 import 'package:provider/provider.dart';
 import 'data.dart';
 import 'home.dart';
@@ -43,32 +44,35 @@ class App extends StatelessWidget {
     /// before moving to the homePage
     if(loggedIn) {
       simpleGalleryState.readGallery();
+      simpleWorkoutState.getMyStreak();
+      simpleWorkoutState.downloadWorkoutDates();
     }
 
     // remove splash screen just before showing the initial screen
     FlutterNativeSplash.remove();
 
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-        title: 'Lift',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        // home: const HomePage(title: 'Lift'),
+        debugShowCheckedModeBanner: false,
+          title: 'Lift',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          // home: const HomePage(title: 'Lift'),
 
-        // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
-        initialRoute: loggedIn?'/':'/login',
-        routes: {
-          '/': (context) => const HomePage(),
-          '/addImagePage': (context) => const AddImagePage(),
-          '/login': (context) => const LoginPage(),
-          '/profile': (context) => Profile(),
-          '/datapage': (context) => DataPage(),
-          '/ranking': (context) => Ranking(),
-          '/workout': (context) => WorkoutTest(),
-          '/posepage': (context) => PoseDetectionPage(),
-          '/posedemo': (context) => PoseDetectorView(),
-          // '/ranking': (context) => const RankingPage(),
-        });
+          // (FirebaseAuth.instance.currentUser == null)?'/login':'/'
+          initialRoute: loggedIn?'/':'/login',
+          routes: {
+            '/': (context) => const HomePage(),
+            '/addImagePage': (context) => const AddImagePage(),
+            '/login': (context) => const LoginPage(),
+            '/profile': (context) => Profile(),
+            '/datapage': (context) => DataPage(),
+            '/ranking': (context) => Ranking(),
+            '/workout': (context) => WorkoutTest(),
+            '/posepage': (context) => PoseDetectionPage(),
+            '/posedemo': (context) => PoseDetectorView(),
+            // '/ranking': (context) => const RankingPage(),
+          },
+    );
   }
 }
