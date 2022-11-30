@@ -95,7 +95,7 @@ class WorkoutState extends ChangeNotifier {
    * Demo of adding workout data to firebase
    */
   void addSampleWorkout(){
-    for(int i=0; i<5; i++){
+    for(int i=0; i<1; i++){
       Workout workout = Workout("", []);
       workout.exercises.add(Exercise("Squat").addSet(100, 10).addSet(110, 8).addSet(120, 5));
       workout.exercises.add(Exercise("Bench Press").addSet(80, 10).addSet(70, 12).addSet(60, 16));
