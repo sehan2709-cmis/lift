@@ -16,7 +16,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 List<CameraDescription> cameras = [];
 
 Future<void> main() async {
-  // flutter pub run flutter_native_splash:create
+  /// flutter pub run flutter_native_splash:create
   // to save splash screen detail
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
