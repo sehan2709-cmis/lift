@@ -6,6 +6,7 @@ import 'package:lift/login.dart';
 import 'package:lift/pose_detection.dart';
 import 'package:lift/pose_detector_view.dart';
 import 'package:lift/ranking.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/profile.dart';
 import 'package:lift/workout.dart';
@@ -28,10 +29,21 @@ class App extends StatelessWidget {
       listen: false,
     );
 
-    final a = Provider.of<WorkoutState>(
+    final simpleWorkoutState = Provider.of<WorkoutState>(
       context,
       listen: false,
     );
+
+    final simpleGalleryState = Provider.of<GalleryState>(
+      context,
+      listen: false,
+    );
+
+    /// if user is logged in, then Gallery data must be fetched
+    /// before moving to the homePage
+    if(loggedIn) {
+      simpleGalleryState.readGallery();
+    }
 
     // remove splash screen just before showing the initial screen
     FlutterNativeSplash.remove();

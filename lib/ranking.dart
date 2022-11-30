@@ -14,6 +14,8 @@ class Ranking extends StatelessWidget {
   Widget build(BuildContext context) {
     // 여기에 넣는 코드는 페이지가 로드 될 때마다 새로 실행된다
     Future.delayed(Duration.zero, () async {
+      /// 아직 context가 만들어 지지 않았는데 context의 provider를 접근하려고 하는게 문제가 생기는 것 같다
+      /// delayed에 이렇게 넣으면 build가 끝난 다음에 실행되기 때문에 괜찮다
       Provider.of<WorkoutState>(context, listen: false).downloadRanking();
       log("downloaded");
     });

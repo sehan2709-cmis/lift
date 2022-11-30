@@ -7,8 +7,11 @@ import 'dart:developer';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cross_file_image/cross_file_image.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:provider/provider.dart';
 
+// TODO: currently selecting image is not necessary but in future
+// will add function so that save is only available when image is selected
 
 class AddImagePage extends StatefulWidget {
   // need user data to process
@@ -20,12 +23,10 @@ class AddImagePage extends StatefulWidget {
 
 class _AddImagePageState extends State<AddImagePage> {
   final ImagePicker _picker = ImagePicker();
-  final _productNameTextController = TextEditingController();
-  final _priceTextController = TextEditingController();
   final _descriptionTextController = TextEditingController();
   XFile? image;
 
-  final String placeholder_img = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png';
+  final String placeholder_img = 'assets/img/placeholder_image.png';
   final String handong_img = "https://handong.edu/site/handong/res/img/logo.png";
 
   String image_url_to_upload = '';
@@ -37,8 +38,8 @@ class _AddImagePageState extends State<AddImagePage> {
 
   @override
   Widget build(BuildContext context) {
-    // final simpleAppState = Provider.of<ApplicationState>(context, listen: false);
-    // _productNameTextController.text = "hi";
+    GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+
     Future<void> addDataToFirebase() async {
       var imageURL;
       if(image != null) {
@@ -101,7 +102,7 @@ class _AddImagePageState extends State<AddImagePage> {
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
             'imageUrl': "$imageURL",
-            'memo': "",
+            'memo': _descriptionTextController.text,
             'timeCreated': FieldValue.serverTimestamp(),
             'timeModified': FieldValue.serverTimestamp(),
           });
@@ -142,6 +143,11 @@ class _AddImagePageState extends State<AddImagePage> {
                 await addDataToFirebase();
                 log("done uploading!");
 
+                /// after successfully uploading image data to firebase
+                /// need to update Gallery
+                /// could use listener but don't think live update is necessary
+                simpleGalleryState.readGallery();
+
                 if (!mounted) return;
                 uploading = false;
                 Navigator.of(context).pop();
@@ -159,7 +165,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     fit: BoxFit.none,
-                    image: NetworkImage(placeholder_img),
+                    image: AssetImage(placeholder_img),
                     opacity: (image==null)?1:0,
                   ),
                 ),
@@ -204,21 +210,21 @@ class _AddImagePageState extends State<AddImagePage> {
                 padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 35),
                 child: Column(
                   children: [
-                    TextFormField(
-                      enabled: !uploading,
-                      controller: _productNameTextController,
-                      decoration: const InputDecoration(hintText: 'Product Name'),
-                    ),
-                    TextFormField(
-                      enabled: !uploading,
-                      controller: _priceTextController,
-                      decoration: const InputDecoration(hintText: 'Price'),
-                      keyboardType: TextInputType.number,
-                    ),
+                    // TextFormField(
+                    //   enabled: !uploading,
+                    //   controller: _productNameTextController,
+                    //   decoration: const InputDecoration(hintText: 'Product Name'),
+                    // ),
+                    // TextFormField(
+                    //   enabled: !uploading,
+                    //   controller: _priceTextController,
+                    //   decoration: const InputDecoration(hintText: 'Price'),
+                    //   keyboardType: TextInputType.number,
+                    // ),
                     TextFormField(
                       enabled: !uploading,
                       controller: _descriptionTextController,
-                      decoration: const InputDecoration(hintText: 'Description'),
+                      decoration: const InputDecoration(hintText: 'memo'),
                       maxLines: 5,
                       minLines: 1,
                     ),
