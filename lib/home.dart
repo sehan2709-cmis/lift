@@ -71,7 +71,9 @@ class _HomePageState extends State<HomePage> {
                 return Ink.image(
                   image: imageProvider,
                   fit: BoxFit.cover,
-                  onImageError: (Object, StackTrace){},
+                  onImageError: (Object, StackTrace){
+                    log("HOME :: no image");
+                  },
                 );
               },
               placeholder: (context, url) => SizedBox(

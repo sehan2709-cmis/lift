@@ -46,7 +46,7 @@ class _RankingState extends State<Ranking>
               indicatorWeight: 6,
               tabs: [
                 Text("Volume"),
-                Text("1RM"),
+                Text("SBD-Max"),
                 Text("Streak"),
               ],
             ),

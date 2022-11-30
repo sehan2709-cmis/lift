@@ -3,9 +3,14 @@ import 'package:lift/model/Exercise.dart';
 import 'package:provider/provider.dart';
 
 class Workout {
-  Workout({createDate = "", exercises = const <Exercise>[]}) {
+  Workout({createDate = "", exercises}) {
     this.createDate = createDate;
-    this.exercises = exercises;
+    if(exercises == null) {
+      this.exercises = <Exercise>[];
+    }
+    else {
+      this.exercises = exercises;
+    }
   }
 
   String _createDate = "";
