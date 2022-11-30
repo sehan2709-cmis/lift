@@ -10,6 +10,8 @@ import 'package:cross_file_image/cross_file_image.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:provider/provider.dart';
 
+// TODO: currently selecting image is not necessary but in future
+// will add function so that save is only available when image is selected
 
 class AddImagePage extends StatefulWidget {
   // need user data to process
@@ -24,7 +26,7 @@ class _AddImagePageState extends State<AddImagePage> {
   final _descriptionTextController = TextEditingController();
   XFile? image;
 
-  final String placeholder_img = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png';
+  final String placeholder_img = 'assets/img/placeholder_image.png';
   final String handong_img = "https://handong.edu/site/handong/res/img/logo.png";
 
   String image_url_to_upload = '';
@@ -163,7 +165,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     fit: BoxFit.none,
-                    image: NetworkImage(placeholder_img),
+                    image: AssetImage(placeholder_img),
                     opacity: (image==null)?1:0,
                   ),
                 ),

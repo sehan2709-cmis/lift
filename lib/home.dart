@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lift/state_management/ApplicationState.dart';
@@ -57,20 +58,27 @@ class _HomePageState extends State<HomePage> {
         clipBehavior: Clip.antiAlias,
         // TODO: Adjust card heights (103)
         child: InkWell(
-          onTap: () {
-            log("HOME :: Image tapped!");
-          },
-          // splashColor: Colors.blue, // only works if the child is Ink.image ???
-          child: Image.network(
-            imgUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (BuildContext, Object, StackTrace) {
-              return Image.asset("assets/img/placeholder_image.png",
-              fit: BoxFit.contain,
-              );
-            } ,
-          ),
-        ),
+            onTap: () {
+              log("HOME :: Image tapped!");
+            },
+            // splashColor: Colors.blue, // only works if the child is Ink.image ???
+            child: CachedNetworkImage(
+              imageUrl: imgUrl,
+              imageBuilder: (context, imageProvider) {
+                return Ink.image(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                  onImageError: (Object, StackTrace){},
+                );
+              },
+              placeholder: (context, url) => SizedBox(
+                width: 10,
+                height: 10,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              /// if no image is found -> display error icon
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            )),
         // Stack(
         //   children: [
         //     Column(
@@ -239,6 +247,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisCount: 2,
               padding: const EdgeInsets.all(16.0),
               childAspectRatio: 8.0 / 9.0,
+
               /// galleryState.gallery is automatically updated when notifyListeners() is called at the Provider side
               children: _buildGridCards(context, galleryState.gallery),
             ),
