@@ -28,7 +28,7 @@ class _RankingState extends State<Ranking>
     Future.delayed(Duration.zero, () async {
       /// 아직 context가 만들어 지지 않았는데 context의 provider를 접근하려고 하는게 문제가 생기는 것 같다
       /// delayed에 이렇게 넣으면 build가 끝난 다음에 실행되기 때문에 괜찮다
-      Provider.of<WorkoutState>(context, listen: false).downloadRanking();
+      Provider.of<WorkoutState>(context, listen: false).downloadVolumeRanking();
       log("downloaded");
     });
 
@@ -38,12 +38,12 @@ class _RankingState extends State<Ranking>
         appBar: AppBar(
           title: Text("Ranking"),
           bottom: PreferredSize(
-            preferredSize: Size.fromHeight(15),
+            preferredSize: Size.fromHeight(20),
             child: TabBar(
               // indicator: BoxDecoration(
               //     borderRadius: BorderRadius.circular(50), // Creates border
               //     color: Colors.greenAccent),
-              indicatorWeight: 10,
+              indicatorWeight: 6,
               tabs: [
                 Text("Volume"),
                 Text("1RM"),
@@ -58,7 +58,7 @@ class _RankingState extends State<Ranking>
               ListView(
                 children: [
                   // variable i need to keep increasing, so can't use final keyword here
-                  for (var i = 0; i < workoutState.rankingSize; i++)
+                  for (var i = 0; i < workoutState.volumeRankingSize; i++)
                     Padding(
                       padding: EdgeInsets.all(10),
                       child: Row(
@@ -73,11 +73,11 @@ class _RankingState extends State<Ranking>
                           Expanded(
                             flex: 5,
                             child: Text(
-                                "${workoutState.ranks["user"]?.elementAt(i)}"),
+                                "${workoutState.volumeRanking["user"]?.elementAt(i)}"),
                           ),
                           Flexible(
                             child: Text(
-                                "${workoutState.ranks["totalVolume"]?.elementAt(i)}"),
+                                "${workoutState.volumeRanking["totalVolume"]?.elementAt(i)}"),
                           ),
                         ],
                       ),

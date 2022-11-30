@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lift/state_management/ApplicationState.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
+import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 
 import 'model/Workout.dart';
@@ -168,6 +169,9 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
+          ElevatedButton(onPressed: (){
+            // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+          }, child: Text("Test Button"),),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

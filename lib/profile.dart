@@ -23,6 +23,9 @@ class Profile extends StatelessWidget {
       body: ProfileScreen(
 
         actions: [
+          /// When signing out, need to clear out all the user data
+          /// Currently signing out doesn't do that
+          /// Gallery data and DataPage data are kept which is not good
           SignedOutAction((context) {
             GoogleSignIn().signOut();
             FirebaseAuth.instance.signOut();

@@ -1,9 +1,7 @@
 import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 
 class NavigationState extends ChangeNotifier {
-
   NavigationState() {
     log("Creating NavigationState");
   }
@@ -15,5 +13,4 @@ class NavigationState extends ChangeNotifier {
     _index = index;
     notifyListeners();
   }
-
 }
