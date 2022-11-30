@@ -101,7 +101,7 @@ class _AddImagePageState extends State<AddImagePage> {
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
             'imageUrl': "$imageURL",
-            'memo': "",
+            'memo': _descriptionTextController.text,
             'timeCreated': FieldValue.serverTimestamp(),
             'timeModified': FieldValue.serverTimestamp(),
           });
@@ -204,21 +204,21 @@ class _AddImagePageState extends State<AddImagePage> {
                 padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 35),
                 child: Column(
                   children: [
-                    TextFormField(
-                      enabled: !uploading,
-                      controller: _productNameTextController,
-                      decoration: const InputDecoration(hintText: 'Product Name'),
-                    ),
-                    TextFormField(
-                      enabled: !uploading,
-                      controller: _priceTextController,
-                      decoration: const InputDecoration(hintText: 'Price'),
-                      keyboardType: TextInputType.number,
-                    ),
+                    // TextFormField(
+                    //   enabled: !uploading,
+                    //   controller: _productNameTextController,
+                    //   decoration: const InputDecoration(hintText: 'Product Name'),
+                    // ),
+                    // TextFormField(
+                    //   enabled: !uploading,
+                    //   controller: _priceTextController,
+                    //   decoration: const InputDecoration(hintText: 'Price'),
+                    //   keyboardType: TextInputType.number,
+                    // ),
                     TextFormField(
                       enabled: !uploading,
                       controller: _descriptionTextController,
-                      decoration: const InputDecoration(hintText: 'Description'),
+                      decoration: const InputDecoration(hintText: 'memo'),
                       maxLines: 5,
                       minLines: 1,
                     ),
