@@ -57,6 +57,7 @@ dependencies:
   calendar_date_picker2: ^0.3.3
   fl_chart: ^0.55.2
   cached_network_image: ^3.2.3
+  local_hero: ^0.2.0
 
 dev_dependencies:
   flutter_test:
