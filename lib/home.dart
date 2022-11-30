@@ -60,6 +60,8 @@ class _HomePageState extends State<HomePage> {
         // TODO: Adjust card heights (103)
         child: InkWell(
             onTap: () {
+              // TODO: Display image detail in a popup (?)
+              // TODO: maybe use HeroAnimation
               log("HOME :: Image tapped!");
             },
             // splashColor: Colors.blue, // only works if the child is Ink.image ???
@@ -170,6 +172,8 @@ class _HomePageState extends State<HomePage> {
             height: 20,
           ),
           ElevatedButton(onPressed: (){
+            log(FieldValue.serverTimestamp().toString());
+            log(Timestamp.now().toString());
             // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
           }, child: Text("Test Button"),),
           Row(
@@ -248,7 +252,7 @@ class _HomePageState extends State<HomePage> {
             builder: (context, galleryState, _) => GridView.count(
               shrinkWrap: true,
               physics: ScrollPhysics(),
-              crossAxisCount: 2,
+              crossAxisCount: 3,
               padding: const EdgeInsets.all(16.0),
               childAspectRatio: 8.0 / 9.0,
 
