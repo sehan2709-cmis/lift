@@ -181,6 +181,7 @@ class WorkoutState extends ChangeNotifier {
     } else {
       myStreak = 0;
     }
+    notifyListeners();
   }
 
   void downloadStreakRanking() {
@@ -361,7 +362,7 @@ class WorkoutState extends ChangeNotifier {
     // first get data in firestore
     DocumentSnapshot workoutYearDoc =
         await userDocRef.collection("WorkoutDates").doc("$year").get();
-    List<bool> workoutMonth;
+    List<dynamic> workoutMonth;
 
     if (workoutYearDoc.exists) {
       workoutMonth = workoutYearDoc.get("$month");
@@ -407,9 +408,9 @@ class WorkoutState extends ChangeNotifier {
       if (u == w) {
         /// this means that the person workout out more than once at the same day
         /// this neither count nor reset workout streak
+        log("workout on the same doesn't count");
         break label;
       }
-
       if (p == w) {
         /// this means that this user worked out in a row, so add up streak
         // get streak data
@@ -420,6 +421,7 @@ class WorkoutState extends ChangeNotifier {
           {"streak": streak},
           SetOptions(merge: true),
         );
+        log("worked out in a streak!");
       }
 
       /// !!!!!!!!!
@@ -428,10 +430,13 @@ class WorkoutState extends ChangeNotifier {
       /// how to implement this...
       /// server side? (could use firebase functions but this requires upgrading pricing plan)
       // 일단 그래도 reset하기
-      userDocRef.set(
-        {"streak": 0},
-        SetOptions(merge: true),
-      );
+      else {
+        log("lost streak...");
+        userDocRef.set(
+          {"streak": 0},
+          SetOptions(merge: true),
+        );
+      }
     } catch (e) {
       /// lastWorkout field 가 없다는 것은 workout을 처음 등록 했다는 것이고,
       /// 당연히 Streak 값도 없을 것이다
