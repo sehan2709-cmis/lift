@@ -49,6 +49,7 @@ class WorkoutState extends ChangeNotifier {
       }
     }
     log("WS :: ${currentYearWorkoutDates.toString()}");
+    notifyListeners();
   }
 
   /// uid used here must be continuously updated when user changes
@@ -107,6 +108,34 @@ class WorkoutState extends ChangeNotifier {
       }
     }
     return totalVolume;
+  }
+
+  Map<String, num> findMaxSBD(Workout workout) {
+    Map<String, num> maxSBD = {"Squat":0, "Bench":0, "Dead":0};
+    for(final exercise in workout.exercises) {
+      if(exercise.Name == "Squat"){
+        for(final set in exercise.Sets) {
+          if(set["weight"]! > maxSBD["Squat"]!){
+            maxSBD["Squat"] = set["weight"] as num;
+          }
+        }
+      }
+      if(exercise.Name == "Bench"){
+        for(final set in exercise.Sets) {
+          if(set["weight"]! > maxSBD["Bench"]!){
+            maxSBD["Bench"] = set["weight"] as num;
+          }
+        }
+      }
+      if(exercise.Name == "Dead"){
+        for(final set in exercise.Sets) {
+          if(set["weight"]! > maxSBD["Dead"]!){
+            maxSBD["Dead"] = set["weight"] as num;
+          }
+        }
+      }
+    }
+    return maxSBD;
   }
 
   /// downloads current streak
@@ -295,7 +324,38 @@ class WorkoutState extends ChangeNotifier {
     // if it is greater than server value, update server value
     // else leave the value
     Map<String, dynamic> userDocData = userDoc.data() as Map<String, dynamic>;
-    userDocData.containsKey("key");
+
+    Map<String, num> currentMaxSBD = findMaxSBD(workout);
+    num c_s = currentMaxSBD["Squat"]!;
+    num c_b= currentMaxSBD["Bench"]!;
+    num c_d = currentMaxSBD["Dead"]!;
+
+    if(userDocData.containsKey("SBD-Max")){
+      DocumentSnapshot doc = await userDocRef.get();
+      Map<String,dynamic> data = doc.data() as Map<String,dynamic>;
+      /// 현재 피곤해서 용어의 대소문자 통일성 없음
+      /// double int 도 통일성 없음 ㅋㅋ
+      /// 미래의 너에게 맡긴다 ㅋㅋㄹㅃㅃ
+      int s = data["squat"];
+      int b = data["bench"];
+      int d = data["dead"];
+
+      if(c_s > s){
+        await userDocRef.set({"squat":c_s}, SetOptions(merge: true));
+      }
+      if(c_b > b){
+        await userDocRef.set({"bench":c_b}, SetOptions(merge: true));
+      }
+      if(c_d > d){
+        await userDocRef.set({"dead":c_d}, SetOptions(merge: true));
+      }
+      // otherwise leave unchanged
+    }
+    else {
+      // 처음
+      await userDocRef.set({"squat":c_s, "bench":c_b, "dead":c_d}, SetOptions(merge: true));
+    }
+
 
     /// Update last workout date (only 1 workout counted per day)
     // create a field "lastWorkout" under user doc

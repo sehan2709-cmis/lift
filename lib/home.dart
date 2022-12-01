@@ -238,28 +238,30 @@ class _HomePageState extends State<HomePage> {
             color: Colors.lightBlue,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-              child: HeatMap(
-                // need to get the dataset from provider?
-                // fixed fill color value
-                datasets: simpleWorkoutState.currentYearWorkoutDates,
-                colorMode: ColorMode.opacity,
-                showText: false,
-                scrollable: true,
-                showColorTip: false, // don't show color range tip
-                colorsets: {
-                  1: Colors.red,
-                  3: Colors.orange,
-                  5: Colors.yellow,
-                  7: Colors.green,
-                  9: Colors.blue,
-                  11: Colors.indigo,
-                  13: Colors.purple,
-                },
-                onClick: (value) {
-                  // 날짜 클릭 했을 때
-                  // ScaffoldMessenger.of(context)
-                  //     .showSnackBar(SnackBar(content: Text(value.toString())));
-                },
+              child: Consumer<WorkoutState>(
+                builder: (context, galleryState, _) => HeatMap(
+                    // need to get the dataset from provider?
+                    // fixed fill color value
+                    datasets: simpleWorkoutState.currentYearWorkoutDates,
+                    colorMode: ColorMode.opacity,
+                    showText: false,
+                    scrollable: true,
+                    showColorTip: false, // don't show color range tip
+                    colorsets: {
+                      1: Colors.red,
+                      3: Colors.orange,
+                      5: Colors.yellow,
+                      7: Colors.green,
+                      9: Colors.blue,
+                      11: Colors.indigo,
+                      13: Colors.purple,
+                    },
+                    onClick: (value) {
+                      // 날짜 클릭 했을 때
+                      // ScaffoldMessenger.of(context)
+                      //     .showSnackBar(SnackBar(content: Text(value.toString())));
+                    },
+                  ),
               ),
             ),
           ),
