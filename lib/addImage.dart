@@ -98,7 +98,7 @@ class _AddImagePageState extends State<AddImagePage> {
       //        product_collection.where("wishlist", arrayContains: <uid>);
       //    this will return all document where wishlist field contains uid
       // create document of random name
-      FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
             'imageUrl': "$imageURL",
@@ -134,6 +134,8 @@ class _AddImagePageState extends State<AddImagePage> {
                 ),
               ),
               onPressed: () async {
+                /// if the state is uploading, don't allow the button to be pressed again
+                if(uploading) return;
                 setState(() {
                   uploading = true;
                 });
@@ -149,7 +151,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 simpleGalleryState.readGallery();
 
                 if (!mounted) return;
-                uploading = false;
+                // uploading = false;
                 Navigator.of(context).pop();
               },
             ),
