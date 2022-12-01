@@ -51,6 +51,13 @@ dependencies:
   image_picker: ^0.8.6
   flutter_native_splash: ^2.2.16
   flutter_heatmap_calendar: ^1.0.5
+  firebase_storage: ^11.0.6
+  cross_file_image: ^1.0.0
+  path_provider: ^2.0.11
+  calendar_date_picker2: ^0.3.3
+  fl_chart: ^0.55.2
+  cached_network_image: ^3.2.3
+  local_hero: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -76,7 +83,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/img/splash_logo.png
+  # import all assets under assets/img directory
+    - assets/img/
 #     - images/a_dot_burr.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

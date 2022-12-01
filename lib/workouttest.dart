@@ -18,7 +18,7 @@ class WorkoutTest extends StatefulWidget {
 }
 
 List<Exercise> todayWorkout = [];
-Workout workout = Workout("", []);
+Workout workout = Workout();
 List<TextEditingController> weightControl = [];
 List<TextEditingController> repsControl = [];
 

@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:provider/provider.dart';
 
+import '../state_management/GalleryState.dart';
+
 class BNavigationBar extends StatelessWidget {
   @override
 
   Widget build(BuildContext context) {
     NavigationState navigationState = Provider.of<NavigationState>(context);
+    GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+
     return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -36,6 +40,7 @@ class BNavigationBar extends StatelessWidget {
           navigationState.updateCurrentPage(index);
           switch(index) {
             case 0: // home
+              simpleGalleryState.readGallery();
               Navigator.of(context).popAndPushNamed('/');
               break;
             case 1: // data

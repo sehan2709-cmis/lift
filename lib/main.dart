@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lift/state_management/CameraState.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
@@ -16,13 +17,11 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 List<CameraDescription> cameras = [];
 
 Future<void> main() async {
-  // flutter pub run flutter_native_splash:create
+  /// flutter pub run flutter_native_splash:create
   // to save splash screen detail
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   cameras = await availableCameras();
   User? user = FirebaseAuth.instance.currentUser;
   bool loggedIn = (user != null)?true:false;
@@ -39,6 +38,8 @@ Future<void> main() async {
               create: (BuildContext context) => WorkoutState()),
           ChangeNotifierProvider(
               create: (BuildContext context) => CameraState()),
+          ChangeNotifierProvider(
+              create: (BuildContext context) => GalleryState()),
         ],
         builder: ((context, child) => App(loggedIn:loggedIn)),
     )

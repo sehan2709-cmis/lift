@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lift/state_management/ApplicationState.dart';
+import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -37,7 +38,10 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final simpleAppState =
         Provider.of<ApplicationState>(context, listen: false);
-
+    final simpleGalleryState = Provider.of<GalleryState>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       // appBar: AppBar(
@@ -69,10 +73,15 @@ class _LoginPageState extends State<LoginPage> {
                 child: Text("Google Login"),
                 onPressed: () async {
                   final login_sucess = signInWithGoogle();
+                  /// create user document if it is first login
+                  /// Question, doing this kind of operation on client side is not very good
+                  /// since any hacker can get the API link can abuse it (??? not sure)
                   if (await login_sucess) {
                     if(await checkFirstLogin()){
                       createUserDoc();
                     }
+                    /// when login for the first time, download gallery data
+                    simpleGalleryState.readGallery();
                     Navigator.of(context).pop();
                   }
                 },
