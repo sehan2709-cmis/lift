@@ -14,8 +14,13 @@ class GalleryState extends ChangeNotifier {
   // variable to store gallery information
   List<Map<String, dynamic>> gallery = [];
 
+  /// this is for when logging out
+  void resetGallery() {
+    gallery.clear();
+  }
+
   /// Read current user's Gallery data
-  void readGallery() async {
+  Future<void> readGallery() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     QuerySnapshot<Map<String, dynamic>> res = await FirebaseFirestore.instance
         .collection("User")
@@ -32,7 +37,10 @@ class GalleryState extends ChangeNotifier {
     else if (res.docs.isNotEmpty) {
       log("HOME :: Gallery item(s) found!");
       for (final doc in res.docs) {
-        gallery.add(doc.data());
+        final docA = doc.data();
+        docA.addAll({"docId":doc.id});
+        gallery.add(docA);
+        log("GALLERY :: ${docA}");
       }
     }
     notifyListeners();

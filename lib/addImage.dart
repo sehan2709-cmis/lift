@@ -102,7 +102,9 @@ class _AddImagePageState extends State<AddImagePage> {
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
             'imageUrl': "$imageURL",
+            'imageName': image_name_to_upload,
             'memo': _descriptionTextController.text,
+            'author': uid,
             'timeCreated': FieldValue.serverTimestamp(),
             'timeModified': FieldValue.serverTimestamp(),
           });
@@ -160,7 +162,6 @@ class _AddImagePageState extends State<AddImagePage> {
         body: SafeArea(
           child: ListView(
             children: [
-
               Container(
                 width: MediaQuery.of(context).size.width,
                 height: 300,
@@ -174,10 +175,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 child: (image==null)?
                 const SizedBox.shrink():
                 Image(image: XFileImage(image!),)
-
-
               ),
-
               Container(
                 width: double.infinity,
                 alignment: Alignment.centerRight,
