@@ -9,6 +9,7 @@ import 'package:lift/ranking.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/profile.dart';
+import 'package:lift/user_global_profile.dart';
 import 'package:lift/workout.dart';
 import 'package:lift/workouttest.dart';
 import 'package:local_hero/local_hero.dart';
@@ -71,7 +72,7 @@ class App extends StatelessWidget {
             '/workout': (context) => WorkoutTest(),
             '/posepage': (context) => PoseDetectionPage(),
             '/posedemo': (context) => PoseDetectorView(),
-            // '/ranking': (context) => const RankingPage(),
+            '/ranking/userGobalProfile': (context) => UserGlobalProfilePage(),
           },
     );
   }
