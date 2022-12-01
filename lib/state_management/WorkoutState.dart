@@ -15,15 +15,41 @@ class WorkoutState extends ChangeNotifier {
 
   /// {"totalVolume", "streak", "BSD-Max"}
   Map<String, List<String>> volumeRanking = {};
+  Map<String, List<String>> streakRanking = {};
+  Map<String, List<String>> sbdSumRanking = {};
   int volumeRankingSize = 0;
-  int streak = 0;
+  int streakRankingSize = 0;
+  int sbdSumRankingSize = 0;
+
   void resetVolumeRanking() {
     volumeRanking.clear();
-    volumeRanking.addAll({"user": [], "totalVolume": []});
+    volumeRanking.addAll({"user": [], "score": []});
     volumeRankingSize = 0;
+  }
+  void resetStreakRanking() {
+    streakRanking.clear();
+    streakRanking.addAll({"user": [], "score": []});
+    streakRankingSize = 0;
+  }
+  void resetSBDSumRanking() {
+    sbdSumRanking.clear();
+    sbdSumRanking.addAll({"user": [], "score": []});
+    sbdSumRankingSize = 0;
+  }
+
+  int myStreak = 0;
+
+  /// for when logging out
+  void resetAll() {
+    workouts.clear();
+    resetStreakRanking();
+    resetSBDSumRanking();
+    resetVolumeRanking();
+    myStreak = 0;
   }
 
   /// workoutDates
+  /// for home page
   Map<DateTime, int> currentYearWorkoutDates = {};
 
   /// currently it only downloads current year's data
@@ -58,6 +84,9 @@ class WorkoutState extends ChangeNotifier {
   /// or get the current uesr's uid inside the function
   late CollectionReference<Map<String, dynamic>> userCollectionRef;
   late Query<Map<String, dynamic>> totalVolumeQuery;
+  late Query<Map<String, dynamic>> streakQuery;
+  late Query<Map<String, dynamic>> sbdSumQuery;
+
 
   /// initializer
   WorkoutState() {
@@ -70,8 +99,9 @@ class WorkoutState extends ChangeNotifier {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
     userCollectionRef = FirebaseFirestore.instance.collection("User");
-    totalVolumeQuery =
-        userCollectionRef.orderBy('totalVolume', descending: true);
+    totalVolumeQuery = userCollectionRef.orderBy('totalVolume', descending: true);
+    streakQuery = userCollectionRef.orderBy('streak', descending: true);
+    sbdSumQuery = userCollectionRef.orderBy('sbdSum', descending: true);
   }
 
   /// Demo of adding workout data to firebase
@@ -81,9 +111,12 @@ class WorkoutState extends ChangeNotifier {
       workout.exercises
           .add(Exercise("Squat").addSet(100, 10).addSet(110, 8).addSet(120, 5));
       workout.exercises.add(
-          Exercise("Bench Press").addSet(80, 10).addSet(70, 12).addSet(60, 16));
+          Exercise("Bench").addSet(80, 10).addSet(70, 12).addSet(60, 16));
+      workout.exercises.add(
+          Exercise("Dead").addSet(80, 2).addSet(90, 3).addSet(120, 4));
       addWorkout(workout);
     }
+    log("sample workout added");
   }
 
   /// This method searches for all workouts done at the given date
@@ -144,10 +177,65 @@ class WorkoutState extends ChangeNotifier {
     DocumentSnapshot<Map<String, dynamic>> doc =
         await FirebaseFirestore.instance.collection("User").doc(uid).get();
     if (doc.data()!.containsKey("streak")) {
-      streak = doc.get("streak");
+      myStreak = doc.get("streak");
     } else {
-      streak = 0;
+      myStreak = 0;
     }
+  }
+
+  void downloadStreakRanking() {
+    resetStreakRanking();
+    streakQuery.get().then((res) {
+      if (res.size == 0) {
+        log("no streak rankings");
+        return;
+      }
+      for (DocumentSnapshot doc in res.docs) {
+        // document id is user uid
+        // each document contains "totalVolume" field
+        /*
+                currently the ranking system will display user uid instead of nickname
+                however for security reasons this must be fixed if it is going to be released
+                 */
+        var data = doc.data() as Map<String, dynamic>;
+        data.entries.where((element) => element.key == "streak");
+
+        /// if nickName exsits, use nickName instead of uid
+        streakRanking["user"]?.add(doc.id);
+        log("STREAK :: ${data["streak"].toString()}");
+        streakRanking["score"]?.add(data["streak"].toString());
+        streakRankingSize++;
+      }
+      log("Ranks :: ${streakRanking.toString()}");
+      notifyListeners(); // after successfully updating, need to notify listening widgets
+    });
+  }
+
+  void downloadSBDSumRanking() {
+    resetSBDSumRanking();
+    sbdSumQuery.get().then((res) {
+      if (res.size == 0) {
+        log("no sbdSum rankings");
+        return;
+      }
+      for (DocumentSnapshot doc in res.docs) {
+        // document id is user uid
+        // each document contains "totalVolume" field
+        /*
+                currently the ranking system will display user uid instead of nickname
+                however for security reasons this must be fixed if it is going to be released
+                 */
+        var data = doc.data() as Map<String, dynamic>;
+        data.entries.where((element) => element.key == "sbdSum");
+
+        /// if nickName exsits, use nickName instead of uid
+        sbdSumRanking["user"]?.add(doc.id);
+        sbdSumRanking["score"]?.add(data["sbdSum"].toString());
+        sbdSumRankingSize++;
+      }
+      log("Ranks :: ${sbdSumRanking.toString()}");
+      notifyListeners(); // after successfully updating, need to notify listening widgets
+    });
   }
 
   /// change this to download all rankings ??
@@ -171,6 +259,41 @@ class WorkoutState extends ChangeNotifier {
 
         /// if nickName exsits, use nickName instead of uid
         volumeRanking["user"]?.add(doc.id);
+        log("Adding volumne: ${doc.id}");
+        volumeRanking["score"]?.add(data["totalVolume"].toString());
+        volumeRankingSize++;
+      }
+      log("Ranks :: ${volumeRanking.toString()}");
+      notifyListeners(); // after successfully updating, need to notify listening widgets
+    });
+    // since above operation is asynchronous, notifyListeners() must be called inside
+  }
+
+  /// aborted
+  void downloadAllRanking() {
+    // reset the outdated ranking
+    resetVolumeRanking();
+    resetSBDSumRanking();
+    resetStreakRanking();
+
+    totalVolumeQuery.get().then((res) {
+      if (res.size == 0) {
+        log("no volume rankings");
+        return;
+      }
+      for (DocumentSnapshot doc in res.docs) {
+        // document id is user uid
+        // each document contains "totalVolume" field
+        /*
+                currently the ranking system will display user uid instead of nickname
+                however for security reasons this must be fixed if it is going to be released
+                 */
+        var data = doc.data() as Map<String, dynamic>;
+        data.entries.where((element) => element.key == "totalVolume");
+
+        /// if nickName exsits, use nickName instead of uid
+        volumeRanking["user"]?.add(doc.id);
+        log("Adding volumne: ${doc.id}");
         volumeRanking["totalVolume"]?.add(data["totalVolume"].toString());
         volumeRankingSize++;
       }
@@ -234,15 +357,18 @@ class WorkoutState extends ChangeNotifier {
     final year = uploadDateTime.year;
     final month = uploadDateTime.month;
     final day = uploadDateTime.day;
+    log("$year / $month / $day");
     // first get data in firestore
     DocumentSnapshot workoutYearDoc =
         await userDocRef.collection("WorkoutDates").doc("$year").get();
     List<bool> workoutMonth;
-    if (!workoutYearDoc.exists) {
+
+    if (workoutYearDoc.exists) {
       workoutMonth = workoutYearDoc.get("$month");
     } else {
       workoutMonth = [];
     }
+
     while (workoutMonth.length < day) {
       workoutMonth.add(false);
     }
@@ -333,29 +459,32 @@ class WorkoutState extends ChangeNotifier {
     if(userDocData.containsKey("SBD-Max")){
       DocumentSnapshot doc = await userDocRef.get();
       Map<String,dynamic> data = doc.data() as Map<String,dynamic>;
-      /// 현재 피곤해서 용어의 대소문자 통일성 없음
-      /// double int 도 통일성 없음 ㅋㅋ
-      /// 미래의 너에게 맡긴다 ㅋㅋㄹㅃㅃ
-      int s = data["squat"];
-      int b = data["bench"];
-      int d = data["dead"];
-
+      /// 현재 피곤해서 용어의 대소문자 통일성 없음...
+      /// double int 도 통일성 없음... gg
+      num s = data["squat"];
+      num b = data["bench"];
+      num d = data["dead"];
       if(c_s > s){
-        await userDocRef.set({"squat":c_s}, SetOptions(merge: true));
+        s = c_s;
       }
       if(c_b > b){
-        await userDocRef.set({"bench":c_b}, SetOptions(merge: true));
+        b = c_b;
       }
       if(c_d > d){
-        await userDocRef.set({"dead":c_d}, SetOptions(merge: true));
+        d = c_d;
       }
       // otherwise leave unchanged
+      await userDocRef.set({"sbd": {"squat": s, "bench": b, "dead": d}}, SetOptions(merge: true));
+      num sum = s+b+d;
+      await userDocRef.set({"sbdSum": sum}, SetOptions(merge: true));
+
     }
     else {
       // 처음
-      await userDocRef.set({"squat":c_s, "bench":c_b, "dead":c_d}, SetOptions(merge: true));
+      await userDocRef.set({"sbd": {"squat": c_s, "bench": c_b, "dead": c_d}}, SetOptions(merge: true));
+      num sum = c_s+c_b+c_d;
+      await userDocRef.set({"sbdSum": sum}, SetOptions(merge: true));
     }
-
 
     /// Update last workout date (only 1 workout counted per day)
     // create a field "lastWorkout" under user doc
@@ -365,6 +494,8 @@ class WorkoutState extends ChangeNotifier {
       {"lastWorkout": uploadTimeStamp},
       SetOptions(merge: true),
     );
+
+    log("------- Workout add completed");
   }
 
   /// Get workout data of a user once
@@ -414,7 +545,7 @@ class WorkoutState extends ChangeNotifier {
         }
         log(_workouts.toString());
       },
-      onError: (e) => print("Error getting document: $e"),
+      onError: (e) => log("Error getting document: $e"),
     );
   }
 
