@@ -3,12 +3,27 @@ import 'package:lift/model/Exercise.dart';
 import 'package:provider/provider.dart';
 
 class Workout {
-  Workout(this._CreateDate, this._exercises);
+  Workout({createDate = "", exercises}) {
+    this.createDate = createDate;
+    if(exercises == null) {
+      this.exercises = <Exercise>[];
+    }
+    else {
+      this.exercises = exercises;
+    }
+  }
 
-  final String _CreateDate;
-  final List<Exercise> _exercises;
+  String _createDate = "";
+  set createDate(String value) {
+    _createDate = value;
+  }
 
-  String get CreateDate => _CreateDate;
+  List<Exercise> _exercises = [];
+  set exercises(List<Exercise> value) {
+    _exercises = value;
+  }
+
+  String get createDate => _createDate;
   List<Exercise> get exercises => _exercises;
 
   Map<String, dynamic> data(){
@@ -31,7 +46,7 @@ class Workout {
   */
   @override
   String toString(){
-    String string = "Date: ${CreateDate}\n";
+    String string = "Date: ${createDate}\n";
     for(final exercise in exercises){
       string += "${exercise.toString()}";
     }

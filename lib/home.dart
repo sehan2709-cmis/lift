@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lift/state_management/ApplicationState.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
+import 'package:lift/state_management/WorkoutState.dart';
+import 'package:local_hero/local_hero.dart';
 import 'package:provider/provider.dart';
 
 import 'model/Workout.dart';
@@ -47,28 +49,61 @@ class _HomePageState extends State<HomePage> {
     return gallery.map((Map<String, dynamic> item) {
       final imgUrl = item["imageUrl"].toString();
       final memo = item["memo"].toString();
-      final timeCreated = item["timeCreated"].toString();
-      final timeModified = item["timeModified"].toString();
+      final timeCreated = item["timeCreated"].toDate().toString();
+      final timeModified = item["timeModified"].toDate().toString();
 
       /// there might be case where imageUrl value doesn't exist or
       /// link is dead and cannot retrieve the image
       /// in this case, use default image
-
       return Card(
         clipBehavior: Clip.antiAlias,
         // TODO: Adjust card heights (103)
         child: InkWell(
-            onTap: () {
-              log("HOME :: Image tapped!");
-            },
-            // splashColor: Colors.blue, // only works if the child is Ink.image ???
+          onTap: () async {
+            // Navigator.of(context).push(
+            //     PageRouteBuilder(
+            //         opaque: false,
+            //         barrierDismissible:true,
+            //         pageBuilder: (BuildContext context, _, __) {
+            //           return Dialog(
+            //             child: Hero(
+            //               tag: imgUrl,
+            //               child: CachedNetworkImage(imageUrl: imgUrl,),
+            //             ),
+            //           );
+            //         }
+            //     )
+            // );
+            // // TODO: Display image detail in a popup (?)
+            // // TODO: maybe use HeroAnimation
+            /// Hero animation can only be used between page routes
+            /// Tried LocalHero but failed
+            // timeCreated
+            await showDialog(
+              context: context,
+              builder: (_) => Hero(
+                tag: imgUrl,
+                child: ImageDialog(
+                  imgUrl: imgUrl,
+                  memo: memo,
+                  createDate: timeCreated,
+                ),
+              ),
+            );
+            // log("HOME :: Image tapped!");
+          },
+          splashColor: Colors.blue,
+          child: Hero(
+            tag: imgUrl,
             child: CachedNetworkImage(
               imageUrl: imgUrl,
               imageBuilder: (context, imageProvider) {
                 return Ink.image(
                   image: imageProvider,
                   fit: BoxFit.cover,
-                  onImageError: (Object, StackTrace){},
+                  onImageError: (Object, StackTrace) {
+                    log("HOME :: no image");
+                  },
                 );
               },
               placeholder: (context, url) => SizedBox(
@@ -76,9 +111,12 @@ class _HomePageState extends State<HomePage> {
                 height: 10,
                 child: Center(child: CircularProgressIndicator()),
               ),
+
               /// if no image is found -> display error icon
               errorWidget: (context, url, error) => Icon(Icons.error),
-            )),
+            ),
+          ),
+        ),
         // Stack(
         //   children: [
         //     Column(
@@ -152,6 +190,7 @@ class _HomePageState extends State<HomePage> {
     /// 이렇게 하면 Firebase를 사용해 값이 없데이트 되었을 때에도 build를 다시 하기 때문에
     /// build가 무한 반복으로 실행된다
     /// 따라서 결국 Gallery는 외부로 빼주는게 좋다는 결론
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false,);
     return Scaffold(
       appBar: AppBar(
         title: Text("home"),
@@ -168,6 +207,14 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
+          ElevatedButton(
+            onPressed: () {
+              log(FieldValue.serverTimestamp().toString());
+              log(Timestamp.now().toString());
+              // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+            },
+            child: Text("Test Button"),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -176,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 30),
               ),
               Text(
-                "23",
+                "${simpleWorkoutState.streak}",
                 style: TextStyle(fontSize: 30),
               ),
             ],
@@ -191,34 +238,30 @@ class _HomePageState extends State<HomePage> {
             color: Colors.lightBlue,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-              child: HeatMap(
-                // need to get the dataset from provider?
-                // fixed fill color value
-                datasets: {
-                  DateTime(2022, 11, 6): 13,
-                  DateTime(2022, 11, 7): 13,
-                  DateTime(2022, 11, 8): 13,
-                  DateTime(2022, 11, 9): 13,
-                  DateTime(2022, 11, 13): 13,
-                },
-                colorMode: ColorMode.opacity,
-                showText: false,
-                scrollable: true,
-                showColorTip: false, // don't show color range tip
-                colorsets: {
-                  1: Colors.blue,
-                  3: Colors.orange,
-                  5: Colors.yellow,
-                  7: Colors.green,
-                  9: Colors.blue,
-                  11: Colors.indigo,
-                  13: Colors.purple,
-                },
-                onClick: (value) {
-                  // 날짜 클릭 했을 때
-                  // ScaffoldMessenger.of(context)
-                  //     .showSnackBar(SnackBar(content: Text(value.toString())));
-                },
+              child: Consumer<WorkoutState>(
+                builder: (context, galleryState, _) => HeatMap(
+                    // need to get the dataset from provider?
+                    // fixed fill color value
+                    datasets: simpleWorkoutState.currentYearWorkoutDates,
+                    colorMode: ColorMode.opacity,
+                    showText: false,
+                    scrollable: true,
+                    showColorTip: false, // don't show color range tip
+                    colorsets: {
+                      1: Colors.red,
+                      3: Colors.orange,
+                      5: Colors.yellow,
+                      7: Colors.green,
+                      9: Colors.blue,
+                      11: Colors.indigo,
+                      13: Colors.purple,
+                    },
+                    onClick: (value) {
+                      // 날짜 클릭 했을 때
+                      // ScaffoldMessenger.of(context)
+                      //     .showSnackBar(SnackBar(content: Text(value.toString())));
+                    },
+                  ),
               ),
             ),
           ),
@@ -244,7 +287,7 @@ class _HomePageState extends State<HomePage> {
             builder: (context, galleryState, _) => GridView.count(
               shrinkWrap: true,
               physics: ScrollPhysics(),
-              crossAxisCount: 2,
+              crossAxisCount: 3,
               padding: const EdgeInsets.all(16.0),
               childAspectRatio: 8.0 / 9.0,
 
@@ -255,6 +298,43 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: BNavigationBar(),
+    );
+  }
+}
+
+class ImageDialog extends StatelessWidget {
+  const ImageDialog({super.key, this.imgUrl, this.memo, this.createDate});
+  final imgUrl;
+  final memo;
+  final createDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      /// shape not working
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2.0))),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+
+          SizedBox(
+            height: 300,
+            width: double.infinity,
+            child: CachedNetworkImage(
+              fit: BoxFit.cover,
+              imageUrl: imgUrl,
+            ),
+          ),
+          Text(memo),
+          Text(createDate),
+        ],
+        // decoration: BoxDecoration(
+        //   image: DecorationImage(
+        //     image: CachedNetworkImageProvider(imgUrl),
+        //     fit: BoxFit.cover,
+        //   ),
+        // ),
+      ),
     );
   }
 }
