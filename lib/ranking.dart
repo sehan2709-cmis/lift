@@ -1,11 +1,13 @@
 import 'dart:collection';
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/navigation_bar/bottom_navigation_bar.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
+import 'package:lift/user_global_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
@@ -55,6 +57,10 @@ class _RankingState extends State<Ranking>
             onTap: (){
               /// go to global user profile page
               /// + Hero animation
+              final String uid = FirebaseAuth.instance.currentUser!.uid;
+              // 내 uid말고 클릭한 사용자의 uid
+              log("RANKING -> GP :: ${rankData["user"]?.elementAt(i)}");
+              Navigator.of(context).pushNamed("/ranking/userGobalProfile", arguments: rankData["user"]?.elementAt(i));
             },
             // highlightColor: Colors.black,
             // splashColor: Colors.blue,
