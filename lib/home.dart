@@ -1,18 +1,13 @@
 import 'dart:developer';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:lift/state_management/ApplicationState.dart';
 import 'package:lift/state_management/GalleryState.dart';
-import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
-import 'package:local_hero/local_hero.dart';
 import 'package:provider/provider.dart';
 
-import 'model/Workout.dart';
 import 'navigation_bar/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -99,14 +94,16 @@ class _HomePageState extends State<HomePage> {
           },
           onLongPress: () {
             log("HOME :: image long pressed!");
+
             /// check if the owner of the image is same as user
             /// pop up a dialogue asking to delete the image
             final uid = FirebaseAuth.instance.currentUser!.uid;
-            if(author == uid){
+            if (author == uid) {
               showAlertDialog(context, imgName, docId);
-            }
-            else{
+            } else {
               log("not the author of the image");
+              log("Author: $author");
+              log("You   : $uid");
             }
           },
           splashColor: Colors.blue,
@@ -118,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                 return Ink.image(
                   image: imageProvider,
                   fit: BoxFit.cover,
-                  onImageError: (Object, StackTrace) {
+                  onImageError: (object, stacktrace) {
                     log("HOME :: no image");
                   },
                 );
@@ -202,19 +199,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   showAlertDialog(BuildContext context, String imageName, String docId) {
-    GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+    bool working = false;
+    GalleryState simpleGalleryState =
+        Provider.of<GalleryState>(context, listen: false);
     // set up the buttons
     Widget cancelButton = TextButton(
       child: Text("Cancel"),
-      onPressed:  () {
+      onPressed: () {
         /// do nothing
+        if (working == true) return;
         Navigator.pop(context);
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Delete", style: TextStyle(color: Colors.red),),
+      child: Text(
+        "Delete",
+        style: TextStyle(color: Colors.red),
+      ),
       onPressed: () async {
+        if (working == true) return;
+        working = true;
         log("--- delete pressed!");
+
         /// delete the image from firestore and storage
         // Create a reference to the Firebase Storage bucket
         final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -224,17 +230,22 @@ class _HomePageState extends State<HomePage> {
         try {
           log("images/$uid/$imageName");
           await storageRef.child("images/$uid/$imageName").delete();
-        }catch(e){
+        } catch (e) {
           log(e.toString());
           return;
         }
         log("image deleted!");
         // delete image data from firestore
-        final galleryRef = FirebaseFirestore.instance.collection("User").doc(uid).collection("Gallery");
+        final galleryRef = FirebaseFirestore.instance
+            .collection("User")
+            .doc(uid)
+            .collection("Gallery");
         await galleryRef.doc(docId).delete();
+
         /// reload gallery data from firebase
         await simpleGalleryState.readGallery();
         log("done deleting");
+
         /// finally pop
         Navigator.pop(context);
       },
@@ -267,12 +278,15 @@ class _HomePageState extends State<HomePage> {
     /// build가 무한 반복으로 실행된다
     /// 따라서 결국 Gallery는 외부로 빼주는게 좋다는 결론
 
-    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false,);
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(
+      context,
+      listen: false,
+    );
 
-    Future.delayed(Duration.zero, () async {
-      WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false);
-      simpleWorkoutState.downloadWorkoutDates();
-    });
+    // Future.delayed(Duration.zero, () async {
+    //   simpleWorkoutState.downloadWorkoutDates();
+    // });
+    simpleWorkoutState.downloadWorkoutDates();
 
     return Scaffold(
       appBar: AppBar(
@@ -307,9 +321,11 @@ class _HomePageState extends State<HomePage> {
                 "Workout Streak",
                 style: TextStyle(fontSize: 30),
               ),
-              Text(
-                "${simpleWorkoutState.myStreak}",
-                style: TextStyle(fontSize: 30),
+              Consumer<WorkoutState>(
+                builder: (context, builder, widget) => Text(
+                  "${simpleWorkoutState.myStreak}",
+                  style: TextStyle(fontSize: 30),
+                ),
               ),
             ],
           ),
@@ -325,28 +341,30 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
               child: Consumer<WorkoutState>(
                 builder: (context, galleryState, _) => HeatMap(
-                    // need to get the dataset from provider?
-                    // fixed fill color value
-                    datasets: simpleWorkoutState.currentYearWorkoutDates,
-                    colorMode: ColorMode.opacity,
-                    showText: false,
-                    scrollable: true,
-                    showColorTip: false, // don't show color range tip
-                    colorsets: {
-                      1: Colors.red,
-                      3: Colors.orange,
-                      5: Colors.yellow,
-                      7: Colors.green,
-                      9: Colors.blue,
-                      11: Colors.indigo,
-                      13: Colors.purple,
-                    },
-                    onClick: (value) {
-                      // 날짜 클릭 했을 때
-                      // ScaffoldMessenger.of(context)
-                      //     .showSnackBar(SnackBar(content: Text(value.toString())));
-                    },
-                  ),
+                  startDate: DateTime(2022, 1, 1),
+                  size: 16,
+                  // need to get the dataset from provider?
+                  // fixed fill color value
+                  datasets: simpleWorkoutState.currentYearWorkoutDates,
+                  colorMode: ColorMode.opacity,
+                  showText: false,
+                  scrollable: true,
+                  showColorTip: false, // don't show color range tip
+                  colorsets: {
+                    1: Colors.red,
+                    3: Colors.orange,
+                    5: Colors.yellow,
+                    7: Colors.green,
+                    9: Colors.blue,
+                    11: Colors.indigo,
+                    13: Colors.purple,
+                  },
+                  onClick: (value) {
+                    // 날짜 클릭 했을 때
+                    // ScaffoldMessenger.of(context)
+                    //     .showSnackBar(SnackBar(content: Text(value.toString())));
+                  },
+                ),
               ),
             ),
           ),
@@ -401,7 +419,6 @@ class ImageDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           SizedBox(
             height: 300,
             width: double.infinity,
