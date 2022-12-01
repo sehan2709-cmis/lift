@@ -52,6 +52,29 @@ class WorkoutState extends ChangeNotifier {
   /// for home page
   Map<DateTime, int> currentYearWorkoutDates = {};
 
+  Future<Map<DateTime, int>> getWorkoutDates(String uid) async {
+    Map<DateTime, int> wd = {};
+    int year = 2022;
+    DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
+        .instance
+        .collection("User")
+        .doc(uid)
+        .collection("WorkoutDates")
+        .doc("$year")
+        .get();
+    if(doc.exists) {
+      for (final month in doc.data()!.keys) {
+        List<dynamic> days = doc.get(month);
+        for(int i=0; i<days.length; i++){
+          if(days[i] == true){
+            wd.addAll({DateTime(year, int.parse(month), i+1):13});
+          }
+        }
+      }
+    }
+    return wd;
+  }
+
   /// currently it only downloads current year's data
   void downloadWorkoutDates() async {
     currentYearWorkoutDates.clear();

@@ -19,6 +19,29 @@ class GalleryState extends ChangeNotifier {
     gallery.clear();
   }
 
+  Future<List<Map<String, dynamic>>> getGallery(String uid) async {
+    List<Map<String, dynamic>> g = [];
+    QuerySnapshot<Map<String, dynamic>> res = await FirebaseFirestore.instance
+        .collection("User")
+        .doc(uid)
+        .collection("Gallery")
+        .get();
+
+    if (res.docs.isEmpty) {
+      log("getGallery :: No Gallery items found!");
+    }
+    else if (res.docs.isNotEmpty) {
+      log("getGallery :: Gallery item(s) found!");
+      for (final doc in res.docs) {
+        final docA = doc.data();
+        docA.addAll({"docId":doc.id});
+        g.add(docA);
+        log("GALLERY :: ${docA}");
+      }
+    }
+    return g;
+  }
+
   /// Read current user's Gallery data
   Future<void> readGallery() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;

@@ -72,7 +72,7 @@ class App extends StatelessWidget {
             '/workout': (context) => WorkoutTest(),
             '/posepage': (context) => PoseDetectionPage(),
             '/posedemo': (context) => PoseDetectorView(),
-            '/ranking/userGobalProfile': (context) => UserGlobalProfilePage(),
+            '/userGobalProfile': (context) => UserGlobalProfilePage(),
           },
     );
   }
