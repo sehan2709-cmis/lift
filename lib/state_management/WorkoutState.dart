@@ -52,9 +52,13 @@ class WorkoutState extends ChangeNotifier {
   /// for home page
   Map<DateTime, int> currentYearWorkoutDates = {};
 
-  Future<Map<DateTime, int>> getWorkoutDates(String uid) async {
+  Future<Map<DateTime, int>> getWorkoutDates(String uid, {int? y}) async {
     Map<DateTime, int> wd = {};
     int year = 2022;
+    year = DateTime.now().year;
+    if(y != null){
+      year = y;
+    }
     DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
         .instance
         .collection("User")
@@ -79,7 +83,8 @@ class WorkoutState extends ChangeNotifier {
   void downloadWorkoutDates() async {
     currentYearWorkoutDates.clear();
     int year = 2022;
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+    year = DateTime.now().year;
+    String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
     DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
         .instance
         .collection("User")
@@ -337,20 +342,23 @@ class WorkoutState extends ChangeNotifier {
     // <Map<String, dynamic>>
     DocumentReference userDocRef = userCollectionRef.doc(uid);
 
-    /// upload workout data
-    data["CreateDate"] =
-        FieldValue.serverTimestamp(); // set to server timestamp
-    // <Map<String, dynamic>>
-    DocumentReference addedDocRef =
-        await userDocRef.collection("Workout").add(data);
-
     /// calculate total volume of the workout
-    int totalVolume = 0;
+    num totalVolume = 0;
     for (final exercise in workout.exercises) {
       for (final set in exercise.Sets) {
         totalVolume += set['weight']! * set['reps']!;
       }
     }
+    data["todayVolume"] = totalVolume;
+
+    /// upload workout data
+    data["CreateDate"] =
+        FieldValue.serverTimestamp(); // set to server timestamp
+    // <Map<String, dynamic>>
+    DocumentReference addedDocRef =
+    await userDocRef.collection("Workout").add(data);
+
+
 
     /// Get timestamp of the added workout
     // <Map<String, dynamic>>

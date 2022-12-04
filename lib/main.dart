@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:lift/state_management/CameraState.dart';
+import 'package:lift/state_management/DataState.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
@@ -23,9 +24,12 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   cameras = await availableCameras();
+  /// camera 킬때 오류 생긴다
   User? user = FirebaseAuth.instance.currentUser;
   bool loggedIn = (user != null)?true:false;
-  log("MAIN :: ${user!}");
+
+  log("------------ INITIALIZATION ------------");
+  log("MAIN :: ${user} and loggedIn is $loggedIn");
 
   runApp(
     MultiProvider(
@@ -40,6 +44,8 @@ Future<void> main() async {
               create: (BuildContext context) => CameraState()),
           ChangeNotifierProvider(
               create: (BuildContext context) => GalleryState()),
+          ChangeNotifierProvider(
+              create: (BuildContext context) => DataState()),
         ],
         builder: ((context, child) => App(loggedIn:loggedIn)),
     )

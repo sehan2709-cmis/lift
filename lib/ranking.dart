@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:developer';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:lift/user_global_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart';
 
 class Ranking extends StatefulWidget {
   const Ranking({super.key});
@@ -47,6 +49,7 @@ class _RankingState extends State<Ranking>
       int dataSize,
     ) {
       List<Widget> ranks = [];
+
       ranks.add(SizedBox(
         height: 15,
       ));
@@ -69,8 +72,11 @@ class _RankingState extends State<Ranking>
               // 내 uid말고 클릭한 사용자의 uid
               log("RANKING -> GP :: ${rankData["user"]?.elementAt(i)}");
               final String targetUid = rankData["user"]!.elementAt(i);
+              log("+++++++++++++++++++ waiting for gallery");
               final g = await simpleGalleryState.getGallery(targetUid);
+              log("+++++++++++++++++++ waiting for wd");
               final wd = await simpleWorkoutState.getWorkoutDates(targetUid);
+              log("+++++++++++++++++++ done");
               Navigator.of(context).pushNamed("/userGobalProfile", arguments: [targetUid, g, wd]);
             },
             // highlightColor: Colors.black,
@@ -98,7 +104,7 @@ class _RankingState extends State<Ranking>
                       child: Hero(
                         tag: uuid.v4(),
                         child: Image.network(
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRFU7U2h0umyF0P6E_yhTX45sGgPEQAbGaJ4g&usqp=CAU',
+                            "https://firebasestorage.googleapis.com/v0/b/lift-621df.appspot.com/o/lena.png?alt=media&token=46716e0d-2a1f-46bc-a61e-593c4333627e",
                             fit: BoxFit.cover),
                       ),
                       clipper: MyClip(),

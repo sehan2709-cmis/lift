@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -44,6 +46,7 @@ class App extends StatelessWidget {
     /// if user is logged in, then Gallery data must be fetched
     /// before moving to the homePage
     if(loggedIn) {
+      log("User is logged in and will download user data at initialization");
       simpleGalleryState.readGallery();
       simpleWorkoutState.getMyStreak();
       simpleWorkoutState.downloadWorkoutDates();
@@ -51,6 +54,8 @@ class App extends StatelessWidget {
 
     // remove splash screen just before showing the initial screen
     FlutterNativeSplash.remove();
+
+    log("------------ END OF INITIALIZATION ------------");
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
