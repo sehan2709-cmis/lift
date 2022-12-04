@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:lift/state_management/ApplicationState.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     return gallery.map((Map<String, dynamic> item) {
-      log("GALLERY :: ${item.toString()}");
+      // log("GALLERY :: ${item.toString()}");
       final imgUrl = item["imageUrl"].toString();
       final imgName = item["imageName"].toString();
       final author = item["author"].toString();
@@ -282,11 +283,15 @@ class _HomePageState extends State<HomePage> {
       context,
       listen: false,
     );
+    ApplicationState simpleApplicationState = Provider.of<ApplicationState>(context, listen: false);
 
     // Future.delayed(Duration.zero, () async {
     //   simpleWorkoutState.downloadWorkoutDates();
     // });
-    simpleWorkoutState.downloadWorkoutDates();
+    /// home은 "/" 이고 login은 "/login"이기 때문에 login페이지가 로드되기 전에 home페이지가 먼저 로드 & 빌드 된다.
+    if(simpleApplicationState.loggedIn) {
+      simpleWorkoutState.downloadWorkoutDates();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -304,16 +309,16 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
-          ElevatedButton(
-            onPressed: () {
-              // log(FieldValue.serverTimestamp().toString());
-              // log(Timestamp.now().toString());
-              simpleWorkoutState.addSampleWorkout();
-              log("HOME :: test button pressed");
-              // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
-            },
-            child: Text("Test Button"),
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     // log(FieldValue.serverTimestamp().toString());
+          //     // log(Timestamp.now().toString());
+          //     simpleWorkoutState.addSampleWorkout();
+          //     log("HOME :: test button pressed");
+          //     // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+          //   },
+          //   child: Text("Test Button"),
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -329,11 +334,17 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/posedemo');
-            },
-            child: Text("Pose Detection"),
+          /// GoogleML pose detection demo
+          // TextButton(
+          //   onPressed: () {
+          //     Navigator.of(context).pushNamed('/posedemo');
+          //   },
+          //   child: Text("Pose Detection"),
+          // ),
+          SizedBox(height: 5,),
+          Text(
+            "<${DateTime.now().year}>",
+            style: TextStyle(fontSize: 20),
           ),
           Container(
             color: Colors.lightBlue,

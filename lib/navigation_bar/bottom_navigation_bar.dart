@@ -1,17 +1,21 @@
 import 'dart:developer';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/state_management/NavigationState.dart';
 import 'package:provider/provider.dart';
 
+import '../data.dart';
+import '../state_management/DataState.dart';
 import '../state_management/GalleryState.dart';
 
 class BNavigationBar extends StatelessWidget {
   @override
 
   Widget build(BuildContext context) {
-    NavigationState navigationState = Provider.of<NavigationState>(context);
+    NavigationState navigationState = Provider.of<NavigationState>(context, listen: false);
     GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+    DataState simpleDataState = Provider.of<DataState>(context, listen: false);
 
     return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -35,7 +39,7 @@ class BNavigationBar extends StatelessWidget {
         ],
         currentIndex: navigationState.currentPage,
         selectedItemColor: Colors.blue,
-        onTap: (index) {
+        onTap: (index) async {
           log("navigation $index is pressed!");
           navigationState.updateCurrentPage(index);
           switch(index) {
@@ -44,6 +48,10 @@ class BNavigationBar extends StatelessWidget {
               Navigator.of(context).popAndPushNamed('/');
               break;
             case 1: // data
+              DateTime now = DateTime.now();
+              startDate = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
+              simpleDataState.initData();
+              simpleDataState.updateWorkoutDays(startDate);
               Navigator.of(context).popAndPushNamed('/datapage');
               break;
             case 2: // ranking

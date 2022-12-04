@@ -4,8 +4,13 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:draw_graph/draw_graph.dart';
 import 'package:draw_graph/models/feature.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:lift/model/Workout.dart';
+import 'package:lift/state_management/DataState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
+import 'package:lift/workouttest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -20,6 +25,7 @@ class DataPage extends StatefulWidget {
 
 /// should I move this to a provider?
 List<DateTime?> dateRange = [];
+DateTime startDate = DateTime(1);
 
 /// for expansion pannel
 // stores ExpansionPanel state information
@@ -46,6 +52,10 @@ List<Item> generateItems(int numberOfItems) {
 
 class _DataPageState extends State<DataPage> {
   final List<Item> _data = generateItems(8);
+  List<bool> workoutDays = [true, true, false, true, true];
+
+  /// need to change when page changes
+  // List<bool> workoutDays = [true, true, true, false];
 
   // to build expansion panel items
   Widget _buildPanel() {
@@ -78,36 +88,130 @@ class _DataPageState extends State<DataPage> {
     );
   }
 
+  /// need to initialize above values to data past 7 days at init
+
   @override
   Widget build(BuildContext context) {
-    // WorkoutState workoutState = Provider.of<WorkoutState>(context);
+    DataState simpleDataState = Provider.of<DataState>(context, listen: false);
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false);
+
+    const dayTextStyle = TextStyle(color: Colors.black, fontWeight: FontWeight.w700);
+    final weekendTextStyle = TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600);
+    final anniversaryTextStyle = TextStyle(
+      color: Colors.red[400],
+      fontWeight: FontWeight.w700,
+      decoration: TextDecoration.underline,
+    );
+
+    CalendarDatePicker2WithActionButtonsConfig config(workoutDays) => CalendarDatePicker2WithActionButtonsConfig(
+        dayTextStyle: dayTextStyle,
+        calendarType: CalendarDatePicker2Type.range,
+        selectedDayHighlightColor: Colors.lightBlueAccent,
+        closeDialogOnCancelTapped: true,
+        firstDayOfWeek: 0,  /// starting sunday
+        weekdayLabelTextStyle: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.bold,
+        ),
+        controlsTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+        ),
+        selectedDayTextStyle: dayTextStyle.copyWith(color: Colors.white),
+        dayTextStylePredicate: ({required date}) {
+          TextStyle? textStyle;
+          if (date.weekday == DateTime.saturday ||
+              date.weekday == DateTime.sunday) {
+            textStyle = weekendTextStyle;
+          }
+          if (date.month == 12 && date.day == 25) {
+            textStyle = anniversaryTextStyle;
+          }
+          return textStyle;
+        },
+        dayBuilder: ({
+          required date,
+          textStyle,
+          decoration,
+          isSelected,
+          isDisabled,
+          isToday,
+        }) {
+          Widget? dayWidget;
+          /// get workout dates
+          if (date.day <= workoutDays.length && workoutDays[date.day-1] == true) {
+            dayWidget = Container(
+              decoration: decoration,
+              child: Center(
+                child: Stack(
+                  alignment: AlignmentDirectional.center,
+                  children: [
+                    Text(
+                      MaterialLocalizations.of(context).formatDecimal(date.day),
+                      style: textStyle,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 27.5),
+                      child: Container(
+                        height: 4,
+                        width: 4,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: isSelected == true
+                              ? Colors.white
+                              : Colors.blueAccent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return dayWidget;
+        });
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Data"),
       ),
       body: SafeArea(
           child: ListView(
+
         physics: const ScrollPhysics(),
         shrinkWrap: true,
+        primary: true,
         children: [
           // 1. Calendar
-          CalendarDatePicker2(
-            config: CalendarDatePicker2Config(
-              calendarType: CalendarDatePicker2Type.range,
-            ),
-            onValueChanged: (dates){
+          Consumer<DataState>(
+          builder: (context, dataState, widget) => CalendarDatePicker2(
+            config: config(dataState.workoutDays),
+            onValueChanged: (dates) async {
               // Selecting date will trigger screen rebuild
               // re-building screen will cause the selected date to disappear
               // therefore can't use setState() in here
               // setState(() {});
               dateRange = dates;
               log("DATA :: ${dateRange.toString()}");
+              /// must select 2 dates to display Graph
+              if(dateRange.length == 2){
+                log("Do work");
+                startDate = dateRange.first!;
+                simpleDataState.updateData(dateRange.first!, dateRange.last!);
+              }
             },
-            /// initial value should be past 7 days from today
-            initialValue: [],
-          ),
+            onDisplayedMonthChanged: (date) async {
+              await simpleDataState.updateWorkoutDays(date);
+            },
 
+            /// initial value should be past 7 days from today
+            /// get today from phone time
+            initialValue: [simpleDataState.date1, simpleDataState.date2],
+          )
+          ),
           // 2. Graph
+          /*
           Padding(
             padding: EdgeInsets.all(10),
             child: Consumer<WorkoutState>(
@@ -177,11 +281,356 @@ class _DataPageState extends State<DataPage> {
               },
             ),
           ),
+          */
+          // 2.5 Graph 2
+          Text(" Graph - volume", style: TextStyle(fontSize: 30),),
+          AspectRatio(
+            aspectRatio: 1.5,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(18),
+                ),
+                /// background color
+                color: Color(0xfff3f6f4),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 18,
+                  left: 12,
+                  top: 24,
+                  bottom: 12,
+                ),
+                /// This is where Graph widget is called
+                child: Consumer<DataState>(
+                  builder: (context, dataState, widget) =>
+                    LineChart(
+                      mainData(
+                          dataState.data,
+                          dataState.startDate,
+                          dataState.maxY,
+                          dataState.maxX
+                      ),
+                    ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Text(" Workouts", style: TextStyle(fontSize: 30),),
+          SizedBox(height: 20),
           // 3. Exercise
+          /// Display workout data
           _buildPanel(),
         ],
       )),
       bottomNavigationBar: BNavigationBar(),
     );
   }
+
 }
+
+/// can be customized later
+List<Color> gradientColors = [
+  const Color(0xff23b6e6),
+  const Color(0xff02d375),
+];
+
+LineChartData mainData(List<FlSpot> data, DateTime startDate, double maxY, double maxX) {
+  maxX -= 1;
+  /// need to get data, startDate, max Y, and max X as parameter
+  /// Y = volume
+  // double maxY = 23.0;
+  int hLines = 5;
+  /// X = days
+  /// should not have decimal value
+  // double maxX = 128.0;  // 100일 동안의 기록
+  int maxVLines = 10;
+  double vLineInterval = 1;
+
+  double minY = 100;
+  if(maxY < minY) {
+    maxY = minY;
+  }
+
+  /// 아래 코드는 지금 원하는 대로 안나온다
+  /// 로직을 다시 생각해 봐야된다
+  if(maxX < maxVLines) {
+    vLineInterval = 1;
+  }
+  else {
+    int remainder = (maxX % maxVLines).toInt();
+    if(remainder!= 0) {
+      if(remainder < 5){
+        // I don't want the spacing to be too small
+        int remainder2 = (maxX % (maxVLines-1)).toInt();
+        vLineInterval = (maxX + ((maxVLines-1)-remainder2))/(maxVLines-1);
+      }
+      else {
+        vLineInterval = (maxX + (maxVLines-remainder))/maxVLines;
+      }
+    }
+    else{
+      vLineInterval = maxX/maxVLines;
+    }
+  }
+
+  log("vLineInterval : $vLineInterval");
+  log("maxX : $maxX");
+
+
+  // display all values if days is less than 10
+  // however date is discrete
+
+
+  return LineChartData(
+    gridData: FlGridData(
+      show: true,
+      drawVerticalLine: true,
+      /// line drawing interval
+      horizontalInterval: maxY/hLines,
+      verticalInterval: vLineInterval,
+      getDrawingHorizontalLine: (value) {
+        return FlLine(
+          color: const Color(0xffbcbcbc),
+          strokeWidth: 1,
+        );
+      },
+      getDrawingVerticalLine: (value) {
+        return FlLine(
+          color: const Color(0xffbcbcbc),
+          strokeWidth: 1,
+        );
+      },
+    ),
+    titlesData: FlTitlesData(
+      show: true,
+      rightTitles: AxisTitles(
+        sideTitles: SideTitles(showTitles: false),
+      ),
+      topTitles: AxisTitles(
+        sideTitles: SideTitles(showTitles: false),
+      ),
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 40, /// don't need to change this
+          /// bottom title interval is defined here
+          interval: vLineInterval,
+          getTitlesWidget: bottomTitleWidgets,
+        ),
+      ),
+      leftTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          interval: maxY/hLines,
+          /// side title
+          getTitlesWidget: leftTitleWidgets,
+          reservedSize: 42, /// no need to change this
+        ),
+      ),
+    ),
+    borderData: FlBorderData(
+      show: true,
+      /// grid color
+      border: Border.all(color: const Color(0xff37434d)),
+    ),
+    /// data setting
+    minX: 0, /// min data is always 0
+    /// Number of bottom width is defined here
+    maxX: maxX, /// maximum width of x (not related to the value of x, but related to size of x)
+    minY: 0, /// min y is always 0
+    maxY: maxY, /// maximum height of y (not related to the value of y)
+    /// make maxY fixed so the user can have good experience
+    /// All y values should be normalized and multiplied by 5
+    lineBarsData: [
+      /// return data
+      LineChartBarData(
+        spots: data,  /// actual data
+        /// curve로 하면 중간 지점들이
+        isCurved: true,
+        preventCurveOverShooting: true,
+        gradient: LinearGradient(
+          colors: gradientColors,
+        ),
+        barWidth: 3.5,
+        isStrokeCapRound: true,
+        dotData: FlDotData(
+          show: false,
+        ),
+        belowBarData: BarAreaData(
+          show: true,
+          gradient: LinearGradient(
+            colors: gradientColors
+                .map((color) => color.withOpacity(0.3))
+                .toList(),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget bottomTitleWidgets(double value, TitleMeta meta) {
+  const style = TextStyle(
+    /// text color
+    color: Color(0xff444444),
+    fontWeight: FontWeight.bold,
+    fontSize: 14,
+  );
+  Widget text;
+
+  DateTime thisDate = startDate.add(Duration(days: value.toInt()));
+  text = Text("${thisDate.month}/\n${thisDate.day}");
+  String dateString = "";
+  switch (thisDate.month) {
+  case 1:
+    dateString += "JAN";
+    break;
+  case 2:
+    dateString += "FEB";
+    break;
+  case 3:
+    dateString += "MAR";
+    break;
+  case 4:
+    dateString += "APR";
+    break;
+  case 5:
+    dateString += "MAY";
+    break;
+  case 6:
+    dateString += "JUN";
+    break;
+  case 7:
+    dateString += "JUL";
+    break;
+  case 8:
+    dateString += "AUG";
+    break;
+  case 9:
+    dateString += "SEP";
+    break;
+  case 10:
+    dateString += "OCT";
+    break;
+  case 11:
+    dateString += "NOV";
+    break;
+  case 12:
+    dateString += "DEC";
+    break;
+  default:
+    dateString += "???";
+    break;
+  }
+
+  dateString += "\n  ";
+  dateString += thisDate.day.toString();
+
+  text = Text(dateString, style: style);
+
+  return SideTitleWidget(
+    axisSide: meta.axisSide,
+    child: text,
+  );
+}
+
+Widget leftTitleWidgets(double value, TitleMeta meta) {
+  const style = TextStyle(
+    /// text color
+    color: Color(0xff444444),
+    fontWeight: FontWeight.bold,
+    fontSize: 15,
+  );
+  String text;
+  if(value<1000){
+    return Text(value.toStringAsFixed(1), style: style, textAlign: TextAlign.left);
+  }
+  else {
+    return Text("${(value/1000).toStringAsFixed(1)}K", style: style, textAlign: TextAlign.left);
+  }
+  switch (value.toInt()) {
+    case 1:
+      /// set text according to the actual maximum value of y
+    /// need to get it from external variable
+    /// can't pass value through parameter..?
+      text = '10K';
+      break;
+    case 3:
+      text = '30k';
+      break;
+    case 5:
+      text = '50k';
+      break;
+    default:
+      // return const Text('a', style: style);
+      return Container();
+  }
+
+  return Text(text, style: style, textAlign: TextAlign.left);
+}
+
+Future<List<FlSpot>> getDataBetweenDates(DateTime date1, DateTime date2) async {
+  /// date1 -> date2
+  List<FlSpot> chartData = <FlSpot>[];
+  /// directly connect to firebase from here
+  /// caller of this method should assign local variable inside setState()
+  log("date 1 is : ${date1.toString()}");
+  log("date 2 is : ${date2.toString()}");
+  int dateDistance = date2.difference(date1).inDays + 1;
+  log("Date distance is : $dateDistance");
+  for(double i=0; i<dateDistance; i++) {
+    /// initialize all data at date to 0
+    chartData.add(FlSpot(i, 0));
+  }
+
+  String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
+  CollectionReference<Map<String, dynamic>> workoutColRef = FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout");
+  /// date2 까지의 정보를 원하기 때문에
+  /// date2 + 1 day를 해주고 lessThan으로 query한다
+  date2 = date2.add(Duration(days: 1));
+  Query<Map<String, dynamic>> betweenDateQuery = workoutColRef.where("CreateDate", isGreaterThanOrEqualTo: date1).where("CreateDate", isLessThan: date2);
+  // query is ordered by "todayVolume" in descending order
+  // this means that max value is at top
+  QuerySnapshot<Map<String, dynamic>> querySnapshot = await betweenDateQuery.get();
+
+
+  /// what if queried data is over 10000 days or like such great number
+  /// need to wait too long?
+  /// might want to limit the maximum allowed query dates
+  num maxVolume = 0;
+  for(QueryDocumentSnapshot<Map<String, dynamic>> doc in querySnapshot.docs){
+    Map<String, dynamic> data = doc.data();
+    // check index position of the date of the found data
+    Timestamp thisDate = data["CreateDate"] as Timestamp;
+    log("@@ data at : ${thisDate.toDate().toString()}");
+    // 운동 생성 날짜 - 시작 날짜 = 운동 그래프 위치
+    int dateIndex = (thisDate.toDate()).difference(date1).inDays;
+    // need to get total volume at specific date
+    num todayVolume = data["todayVolume"];
+    // first data has the max value
+    if(maxVolume == 0) {
+      maxVolume = todayVolume;
+    }
+    // double normalizedVolume = todayVolume/maxVolume;
+    // double scale = 5.0;
+    /// don't need to normalize
+    // todayVolume should be normalized using max value and multiplied by 5
+    chartData[dateIndex] = FlSpot(dateIndex.toDouble(), todayVolume.toDouble());
+  }
+  // FlSpot(0, 3)
+  return chartData;
+}
+
+
+
+
+
+
+
+
+
+
+
+

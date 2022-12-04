@@ -16,6 +16,7 @@ class ApplicationState extends ChangeNotifier {
   // User class is in firebase_auth package
   User? _user;
   User? get user => _user;
+  bool loggedIn = false;
 
   Future<void> init() async {
     /// initialize firebase in main.dart
@@ -27,10 +28,12 @@ class ApplicationState extends ChangeNotifier {
     FirebaseAuth.instance.authStateChanges().listen((User? user) async {
       if (user == null) {
         log('User is currently signed out!');
+        loggedIn = false;
       } else {
         log('User is signed in!');
         log('     --> ${user.uid}');
         _user = user; // set user data
+        loggedIn = true;
       }
       notifyListeners();
     });

@@ -36,7 +36,7 @@ class GalleryState extends ChangeNotifier {
         final docA = doc.data();
         docA.addAll({"docId":doc.id});
         g.add(docA);
-        log("GALLERY :: ${docA}");
+        // log("GALLERY :: ${docA}");
       }
     }
     return g;
@@ -63,7 +63,7 @@ class GalleryState extends ChangeNotifier {
         final docA = doc.data();
         docA.addAll({"docId":doc.id});
         gallery.add(docA);
-        log("GALLERY :: ${docA}");
+        // log("GALLERY :: ${docA}");
       }
     }
     notifyListeners();
