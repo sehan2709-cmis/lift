@@ -1,17 +1,13 @@
 import 'dart:developer';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lift/state_management/ApplicationState.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:lift/state_management/GalleryState.dart';
-import 'package:lift/state_management/NavigationState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
-import 'package:local_hero/local_hero.dart';
 import 'package:provider/provider.dart';
 
-import 'model/Workout.dart';
 import 'navigation_bar/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +43,11 @@ class _HomePageState extends State<HomePage> {
     }
 
     return gallery.map((Map<String, dynamic> item) {
+      log("GALLERY :: ${item.toString()}");
       final imgUrl = item["imageUrl"].toString();
+      final imgName = item["imageName"].toString();
+      final author = item["author"].toString();
+      final docId = item["docId"].toString();
       final memo = item["memo"].toString();
       final timeCreated = item["timeCreated"].toDate().toString();
       final timeModified = item["timeModified"].toDate().toString();
@@ -92,6 +92,20 @@ class _HomePageState extends State<HomePage> {
             );
             // log("HOME :: Image tapped!");
           },
+          onLongPress: () {
+            log("HOME :: image long pressed!");
+
+            /// check if the owner of the image is same as user
+            /// pop up a dialogue asking to delete the image
+            final uid = FirebaseAuth.instance.currentUser!.uid;
+            if (author == uid) {
+              showAlertDialog(context, imgName, docId);
+            } else {
+              log("not the author of the image");
+              log("Author: $author");
+              log("You   : $uid");
+            }
+          },
           splashColor: Colors.blue,
           child: Hero(
             tag: imgUrl,
@@ -101,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                 return Ink.image(
                   image: imageProvider,
                   fit: BoxFit.cover,
-                  onImageError: (Object, StackTrace) {
+                  onImageError: (object, stacktrace) {
                     log("HOME :: no image");
                   },
                 );
@@ -184,13 +198,96 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
+  showAlertDialog(BuildContext context, String imageName, String docId) {
+    bool working = false;
+    GalleryState simpleGalleryState =
+        Provider.of<GalleryState>(context, listen: false);
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: () {
+        /// do nothing
+        if (working == true) return;
+        Navigator.pop(context);
+      },
+    );
+    Widget continueButton = TextButton(
+      child: Text(
+        "Delete",
+        style: TextStyle(color: Colors.red),
+      ),
+      onPressed: () async {
+        if (working == true) return;
+        working = true;
+        log("--- delete pressed!");
+
+        /// delete the image from firestore and storage
+        // Create a reference to the Firebase Storage bucket
+        final uid = FirebaseAuth.instance.currentUser!.uid;
+        final storageRef = FirebaseStorage.instance.ref();
+        // delete image from storage
+        log("hi");
+        try {
+          log("images/$uid/$imageName");
+          await storageRef.child("images/$uid/$imageName").delete();
+        } catch (e) {
+          log(e.toString());
+          return;
+        }
+        log("image deleted!");
+        // delete image data from firestore
+        final galleryRef = FirebaseFirestore.instance
+            .collection("User")
+            .doc(uid)
+            .collection("Gallery");
+        await galleryRef.doc(docId).delete();
+
+        /// reload gallery data from firebase
+        await simpleGalleryState.readGallery();
+        log("done deleting");
+
+        /// finally pop
+        Navigator.pop(context);
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Confirm delete"),
+      content: Text("Would you like to delete this image?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     /// 패이지가 로드 될 때마다 Firebase에서 데이터를 읽어 온다
     /// 이렇게 하면 Firebase를 사용해 값이 없데이트 되었을 때에도 build를 다시 하기 때문에
     /// build가 무한 반복으로 실행된다
     /// 따라서 결국 Gallery는 외부로 빼주는게 좋다는 결론
-    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false,);
+
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(
+      context,
+      listen: false,
+    );
+
+    // Future.delayed(Duration.zero, () async {
+    //   simpleWorkoutState.downloadWorkoutDates();
+    // });
+    simpleWorkoutState.downloadWorkoutDates();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("home"),
@@ -209,8 +306,10 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              log(FieldValue.serverTimestamp().toString());
-              log(Timestamp.now().toString());
+              // log(FieldValue.serverTimestamp().toString());
+              // log(Timestamp.now().toString());
+              simpleWorkoutState.addSampleWorkout();
+              log("HOME :: test button pressed");
               // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
             },
             child: Text("Test Button"),
@@ -222,9 +321,11 @@ class _HomePageState extends State<HomePage> {
                 "Workout Streak",
                 style: TextStyle(fontSize: 30),
               ),
-              Text(
-                "${simpleWorkoutState.streak}",
-                style: TextStyle(fontSize: 30),
+              Consumer<WorkoutState>(
+                builder: (context, builder, widget) => Text(
+                  "${simpleWorkoutState.myStreak}",
+                  style: TextStyle(fontSize: 30),
+                ),
               ),
             ],
           ),
@@ -240,28 +341,30 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
               child: Consumer<WorkoutState>(
                 builder: (context, galleryState, _) => HeatMap(
-                    // need to get the dataset from provider?
-                    // fixed fill color value
-                    datasets: simpleWorkoutState.currentYearWorkoutDates,
-                    colorMode: ColorMode.opacity,
-                    showText: false,
-                    scrollable: true,
-                    showColorTip: false, // don't show color range tip
-                    colorsets: {
-                      1: Colors.red,
-                      3: Colors.orange,
-                      5: Colors.yellow,
-                      7: Colors.green,
-                      9: Colors.blue,
-                      11: Colors.indigo,
-                      13: Colors.purple,
-                    },
-                    onClick: (value) {
-                      // 날짜 클릭 했을 때
-                      // ScaffoldMessenger.of(context)
-                      //     .showSnackBar(SnackBar(content: Text(value.toString())));
-                    },
-                  ),
+                  startDate: DateTime(2022, 1, 1),
+                  size: 16,
+                  // need to get the dataset from provider?
+                  // fixed fill color value
+                  datasets: simpleWorkoutState.currentYearWorkoutDates,
+                  colorMode: ColorMode.opacity,
+                  showText: false,
+                  scrollable: true,
+                  showColorTip: false, // don't show color range tip
+                  colorsets: {
+                    1: Colors.red,
+                    3: Colors.orange,
+                    5: Colors.yellow,
+                    7: Colors.green,
+                    9: Colors.blue,
+                    11: Colors.indigo,
+                    13: Colors.purple,
+                  },
+                  onClick: (value) {
+                    // 날짜 클릭 했을 때
+                    // ScaffoldMessenger.of(context)
+                    //     .showSnackBar(SnackBar(content: Text(value.toString())));
+                  },
+                ),
               ),
             ),
           ),
@@ -316,7 +419,6 @@ class ImageDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           SizedBox(
             height: 300,
             width: double.infinity,

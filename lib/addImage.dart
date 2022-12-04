@@ -98,11 +98,13 @@ class _AddImagePageState extends State<AddImagePage> {
       //        product_collection.where("wishlist", arrayContains: <uid>);
       //    this will return all document where wishlist field contains uid
       // create document of random name
-      FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('User').doc(uid).collection("Gallery")
           .add(<String, dynamic>{
             'imageUrl': "$imageURL",
+            'imageName': image_name_to_upload,
             'memo': _descriptionTextController.text,
+            'author': uid,
             'timeCreated': FieldValue.serverTimestamp(),
             'timeModified': FieldValue.serverTimestamp(),
           });
@@ -134,6 +136,8 @@ class _AddImagePageState extends State<AddImagePage> {
                 ),
               ),
               onPressed: () async {
+                /// if the state is uploading, don't allow the button to be pressed again
+                if(uploading) return;
                 setState(() {
                   uploading = true;
                 });
@@ -149,7 +153,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 simpleGalleryState.readGallery();
 
                 if (!mounted) return;
-                uploading = false;
+                // uploading = false;
                 Navigator.of(context).pop();
               },
             ),
@@ -158,7 +162,6 @@ class _AddImagePageState extends State<AddImagePage> {
         body: SafeArea(
           child: ListView(
             children: [
-
               Container(
                 width: MediaQuery.of(context).size.width,
                 height: 300,
@@ -172,10 +175,7 @@ class _AddImagePageState extends State<AddImagePage> {
                 child: (image==null)?
                 const SizedBox.shrink():
                 Image(image: XFileImage(image!),)
-
-
               ),
-
               Container(
                 width: double.infinity,
                 alignment: Alignment.centerRight,
