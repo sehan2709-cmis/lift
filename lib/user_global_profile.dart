@@ -124,7 +124,7 @@ class _UserGlobalProfilePageState extends State<UserGlobalProfilePage> {
                   scrollable: true,
                   showColorTip: false,
                   colorsets: const {
-                    1: Colors.teal,
+                    1: Colors.lightGreenAccent,
                     3: Colors.orange,
                     5: Colors.yellow,
                     7: Colors.green,
