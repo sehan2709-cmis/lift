@@ -28,7 +28,7 @@ class Exercise {
     String string = "${Name}\n";
     for(final set in Sets){
       string += "\tweight: ${set["weight"]}";
-      string += "\treps: ${set["reps"]}\n";
+      string += "\t\treps: ${set["reps"]}\n";
     }
     return string;
   }

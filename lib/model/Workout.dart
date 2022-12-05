@@ -3,7 +3,9 @@ import 'package:lift/model/Exercise.dart';
 import 'package:provider/provider.dart';
 
 class Workout {
-  Workout({createDate, exercises}) {
+  Workout({docId, createDate, exercises}) {
+    this.docId = docId; /// optional
+    /// when adding workout offline, this parameter is not required
 
     if(createDate != null) {
       this.createDate = createDate;
@@ -19,13 +21,15 @@ class Workout {
   }
 
   DateTime? createDate = DateTime.now();
+  String docId = "";
+  List<Exercise> get exercises => _exercises;
 
   List<Exercise> _exercises = [];
   set exercises(List<Exercise> value) {
     _exercises = value;
   }
 
-  List<Exercise> get exercises => _exercises;
+
 
   Map<String, dynamic> data(){
     Map<String, dynamic> data = {};
@@ -48,6 +52,14 @@ class Workout {
   @override
   String toString(){
     String string = "Date: ${createDate}\n";
+    for(final exercise in exercises){
+      string += "${exercise.toString()}";
+    }
+    return string;
+  }
+
+  String toWorkoutOnlyString(){
+    String string = "";
     for(final exercise in exercises){
       string += "${exercise.toString()}";
     }

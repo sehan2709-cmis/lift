@@ -58,6 +58,7 @@ class _DataPageState extends State<DataPage> {
   // List<bool> workoutDays = [true, true, true, false];
 
   // to build expansion panel items
+  // this one is abandoned
   Widget _buildPanel(DataState dataState) {
     return ExpansionPanelList(
       expansionCallback: (int index, bool isExpanded) {
@@ -90,25 +91,52 @@ class _DataPageState extends State<DataPage> {
     );
   }
 
-  // will use this one!
+  /// will use this one!
   List<ExpansionTile> _buildPanel2(DataState dataState) {
     return dataState.workouts.map<ExpansionTile>((Workout workout) {
       return ExpansionTile(
         title: Text(
-          DateFormat("yyyy MMM dd, EEE").format(workout.createDate!),
+          DateFormat("yyyy MMM dd, EEE  hh:mm").format(workout.createDate!),
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
         ),
         children: <Widget>[
           ListTile(
             title: Text(
-              workout.toString(),
+              workout.toWorkoutOnlyString(),
+              // "adfadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfad",
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
-            trailing: const Icon(Icons.delete),
-            onTap: () {
-              log("delete pressed");
-            },
+            trailing: null,
+            onTap: null,
+          ),
+          Row(
+            // mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit),
+                color: Colors.blueAccent,
+                onPressed: () {
+                  /// goto edit page
+                  ///
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_forever),
+                color: Colors.redAccent,
+                onPressed: () async {
+                  /// delete list tile
+                  log("delete pressed!");
+                  String uid = FirebaseAuth.instance.currentUser!.uid;
+                  await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
+                  log("delete success!");
+                  // after deleting update the context
+                  await dataState.reloadDataAndWorkouts();
+                },
+              ),
+            ],
           )
+
         ],
       );
     }).toList();
@@ -116,7 +144,6 @@ class _DataPageState extends State<DataPage> {
 
 
   /// need to initialize above values to data past 7 days at init
-
   @override
   Widget build(BuildContext context) {
     DataState simpleDataState = Provider.of<DataState>(context, listen: false);

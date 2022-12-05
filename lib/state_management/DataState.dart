@@ -82,6 +82,13 @@ class DataState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> reloadDataAndWorkouts() async {
+    if(date2 != null) {
+      await updateData(date1, date2!);
+      await updateWorkouts(date1, date2!);
+    }
+  }
+
   /// updates data for drawing graph
   Future<void> updateData(DateTime date1, DateTime date2) async {
     log("date 1 is : ${date1.toString()}");
@@ -153,10 +160,10 @@ class DataState extends ChangeNotifier {
           exercises.add(exercise);
         }
         Timestamp createDateStamp = data["CreateDate"];
-        log("hi ${createDateStamp.toString()}");
+        // log("hi ${createDateStamp.toString()}");
         DateTime createDate = createDateStamp.toDate();
-        log("bye ${createDate.toString()}");
-        final workout = Workout(createDate: createDate, exercises: exercises,);
+        // log("bye ${createDate.toString()}");
+        final workout = Workout(docId: doc.id, createDate: createDate, exercises: exercises,);
 
         workouts.add(workout);
         log("\t\t workout added!");
