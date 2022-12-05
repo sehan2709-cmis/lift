@@ -41,6 +41,9 @@ class Profile extends StatelessWidget {
       body: ProfileScreen(
         auth: FirebaseAuth.instance,
         avatarSize: 200.0,
+        // children: [
+        //   Text("hi"),
+        // ],
         actions: [
           /// When signing out, need to clear out all the user data
           /// Currently signing out doesn't do that
