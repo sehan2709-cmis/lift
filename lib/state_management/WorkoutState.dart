@@ -299,6 +299,7 @@ class WorkoutState extends ChangeNotifier {
   }
 
   /// aborted
+  /// below function is not used and is not completed
   void downloadAllRanking() {
     // reset the outdated ranking
     resetVolumeRanking();
@@ -586,7 +587,7 @@ class WorkoutState extends ChangeNotifier {
   }
 
   /// below function should not be used
-  /// not completed
+  /// NOT COMPLETED function
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
       workoutQueryStream() {
     log("Downloading user's workout data from firebase");
