@@ -95,7 +95,7 @@ class _DataPageState extends State<DataPage> {
     return dataState.workouts.map<ExpansionTile>((Workout workout) {
       return ExpansionTile(
         title: Text(
-          workout.createDate.toString(),
+          DateFormat("yyyy MMM dd, EEE").format(workout.createDate!),
           style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
         ),
         children: <Widget>[
@@ -104,6 +104,10 @@ class _DataPageState extends State<DataPage> {
               workout.toString(),
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
+            trailing: const Icon(Icons.delete),
+            onTap: () {
+              log("delete pressed");
+            },
           )
         ],
       );

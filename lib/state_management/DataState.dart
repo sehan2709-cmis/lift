@@ -15,6 +15,7 @@ class DataState extends ChangeNotifier {
     init();
   }
 
+  /// variables for drawing graph
   List<FlSpot> data = <FlSpot>[];
   double maxY = 0;
   double maxX = 0;
@@ -32,6 +33,7 @@ class DataState extends ChangeNotifier {
 
 
   void init() {
+    /// dates are initialized to today and today-7
     DateTime now = DateTime.now();
     DateTime date1 = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
     DateTime date2 = DateTime(now.year, now.month, now.day);
@@ -51,6 +53,7 @@ class DataState extends ChangeNotifier {
     }
   }
 
+  /// this is used to display dot mark on the calendar
   Future<void> updateWorkoutDays(DateTime date) async {
     /// download workout dates info for the given date's month
     String uid = FirebaseAuth.instance.currentUser?.uid ?? "";

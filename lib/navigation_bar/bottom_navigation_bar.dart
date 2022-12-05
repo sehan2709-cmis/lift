@@ -48,11 +48,16 @@ class BNavigationBar extends StatelessWidget {
               Navigator.of(context).popAndPushNamed('/');
               break;
             case 1: // data
-              DateTime now = DateTime.now();
-              startDate = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
+              // DateTime now = DateTime.now();
+              // startDate = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
+              DateTime startDate = simpleDataState.date1;
+              DateTime? now = simpleDataState.date2;
+
               simpleDataState.initData();
               simpleDataState.updateWorkoutDays(startDate);
-              simpleDataState.updateWorkouts(startDate, now);
+              if(now != null) {
+                simpleDataState.updateWorkouts(startDate, now);
+              }
               Navigator.of(context).popAndPushNamed('/datapage');
               break;
             case 2: // ranking
