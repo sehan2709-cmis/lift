@@ -17,6 +17,8 @@ class GalleryState extends ChangeNotifier {
   /// this is for when logging out
   void resetGallery() {
     gallery.clear();
+    log("GALLERY IS CLEARED AND IS NOW ${gallery}");
+    notifyListeners();
   }
 
   Future<List<Map<String, dynamic>>> getGallery(String uid) async {

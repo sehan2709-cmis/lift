@@ -33,8 +33,10 @@ class Profile extends StatelessWidget {
           SignedOutAction((context) {
             GoogleSignIn().signOut();
             FirebaseAuth.instance.signOut();
+
             simpleGalleryState.resetGallery();
             simpleWorkoutState.resetAll();
+
             Navigator.of(context).popAndPushNamed('/login');
           }),
         ],
