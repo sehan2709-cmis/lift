@@ -9,6 +9,7 @@ import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:unique_name_generator/unique_name_generator.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -91,6 +92,13 @@ class _LoginPageState extends State<LoginPage> {
                   final login_sucess = anonymousSignIn();
                   if (await login_sucess) {
                     if(await checkFirstLogin()){
+                      var ung = UniqueNameGenerator(
+                        dictionaries: [adjectives, animals],
+                        style: NameStyle.capital,
+                        separator: '_',
+                      );
+                      String name = ung.generate();
+                      await FirebaseAuth.instance.currentUser?.updateDisplayName(name);
                       createUserDoc();
                     }
                     Navigator.of(context).pop();

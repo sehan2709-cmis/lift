@@ -309,16 +309,17 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     // log(FieldValue.serverTimestamp().toString());
-          //     // log(Timestamp.now().toString());
-          //     simpleWorkoutState.addSampleWorkout();
-          //     log("HOME :: test button pressed");
-          //     // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
-          //   },
-          //   child: Text("Test Button"),
-          // ),
+          ElevatedButton(
+            onPressed: () {
+              // log(FieldValue.serverTimestamp().toString());
+              // log(Timestamp.now().toString());
+              // simpleWorkoutState.addSampleWorkout();
+              log("HOME :: test button pressed");
+              log(FirebaseAuth.instance.currentUser.toString());
+              // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+            },
+            child: Text("Test Button"),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
