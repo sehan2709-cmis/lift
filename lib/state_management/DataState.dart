@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../data.dart';
+import '../model/Exercise.dart';
 import '../model/Workout.dart';
 
 class DataState extends ChangeNotifier {
@@ -111,6 +112,65 @@ class DataState extends ChangeNotifier {
 
   /// download workouts between given dates
   Future<void> updateWorkouts(DateTime date1, DateTime date2) async {
+    log("Updating workouts... for data page");
+    // date1 must be same or before date2
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    CollectionReference<Map<String, dynamic>> userCollectionRef = FirebaseFirestore.instance.collection("User");
+    date2 = date2.add(Duration(days: 1));
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await userCollectionRef.doc(uid)
+        .collection("Workout")
+        .orderBy('CreateDate', descending: true)
+        .where("CreateDate", isGreaterThanOrEqualTo: date1)
+        .where("CreateDate", isLessThan: date2)
+        .get();
 
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = querySnapshot.docs;
+    // if some document exists
+
+    if(docs.isNotEmpty) {
+      log("\t\t Some workouts exists!");
+      // reset workout before adding new ones
+      workouts.clear();
+      for(QueryDocumentSnapshot<Map<String, dynamic>> doc in docs){
+        // for each document
+        final data = doc.data() as Map<String, dynamic>;
+        List<Exercise> exercises = []; // create Exercises
+
+        for(final exerciseName in data.keys) {
+          log("ex name $exerciseName");
+          /// should change below logic to skip if exercise doesn't have "weight" and "reps" keys
+          if(exerciseName == "CreateDate") continue; // skip if key name is CreateDate
+          if(exerciseName == "todayVolume") continue; // skip if key name is todayVolume
+          // otherwise assume that it is exercise
+          // create a new exercise with exerciseName
+          Exercise exercise = Exercise(exerciseName);
+          for(final set in data[exerciseName]) {
+            exercise.addSet(set["weight"], set["reps"]);
+          }
+          exercises.add(exercise);
+        }
+        Timestamp createDateStamp = data["CreateDate"];
+        log("hi ${createDateStamp.toString()}");
+        DateTime createDate = createDateStamp.toDate();
+        log("bye ${createDate.toString()}");
+        final workout = Workout(createDate: createDate, exercises: exercises,);
+
+        workouts.add(workout);
+        log("\t\t workout added!");
+      }
+    }
+    else {
+      log("\t\t No workouts found between selected dates");
+      // There are no workout documents to add
+      workouts.clear();
+    }
+
+    // now workouts member variable should have been updated
+    // now update listening children
+
+    // debug print
+    log(workouts.toString());
+
+    notifyListeners();
   }
 }

@@ -157,7 +157,8 @@ class WorkoutState extends ChangeNotifier {
     DateTime tomorrow = DateTime(now.year, now.month, now.day + 1);
 
     for (final workout in workouts) {
-      DateTime workoutDay = DateTime.parse(workout.createDate);
+      // createDate should not be null at this point
+      DateTime workoutDay = workout.createDate!;
       if (workoutDay.isAfter(today) && workoutDay.isBefore(tomorrow)) {
         // log("${today}");
         for (final exercise in workout.exercises) {

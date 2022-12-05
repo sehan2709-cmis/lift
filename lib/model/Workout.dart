@@ -3,8 +3,13 @@ import 'package:lift/model/Exercise.dart';
 import 'package:provider/provider.dart';
 
 class Workout {
-  Workout({createDate = "", exercises}) {
-    this.createDate = createDate;
+  Workout({createDate, exercises}) {
+
+    if(createDate != null) {
+      this.createDate = createDate;
+    }
+    // if null just leave it as default value which is DateTime.now()
+
     if(exercises == null) {
       this.exercises = <Exercise>[];
     }
@@ -13,17 +18,13 @@ class Workout {
     }
   }
 
-  String _createDate = "";
-  set createDate(String value) {
-    _createDate = value;
-  }
+  DateTime? createDate = DateTime.now();
 
   List<Exercise> _exercises = [];
   set exercises(List<Exercise> value) {
     _exercises = value;
   }
 
-  String get createDate => _createDate;
   List<Exercise> get exercises => _exercises;
 
   Map<String, dynamic> data(){

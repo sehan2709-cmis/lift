@@ -58,7 +58,7 @@ class _DataPageState extends State<DataPage> {
   // List<bool> workoutDays = [true, true, true, false];
 
   // to build expansion panel items
-  Widget _buildPanel() {
+  Widget _buildPanel(DataState dataState) {
     return ExpansionPanelList(
       expansionCallback: (int index, bool isExpanded) {
         setState(() {
@@ -67,18 +67,20 @@ class _DataPageState extends State<DataPage> {
       },
       children: _data.map<ExpansionPanel>((Item item) {
         return ExpansionPanel(
+          canTapOnHeader: true,
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
+
               title: Text(item.headerValue),
             );
           },
           body: ListTile(
               title: Text(item.expandedValue),
-              subtitle:
-              const Text('To delete this panel, tap the trash can icon'),
+              subtitle: const Text('To delete this panel, tap the trash can icon'),
               trailing: const Icon(Icons.delete),
               onTap: () {
                 setState(() {
+                  /// delete function
                   _data.removeWhere((Item currentItem) => item == currentItem);
                 });
               }),
@@ -87,6 +89,26 @@ class _DataPageState extends State<DataPage> {
       }).toList(),
     );
   }
+
+  List<ExpansionTile> _buildPanel2(DataState dataState) {
+    return dataState.workouts.map<ExpansionTile>((Workout workout) {
+      return ExpansionTile(
+        title: Text(
+          workout.createDate.toString(),
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+        ),
+        children: <Widget>[
+          ListTile(
+            title: Text(
+              workout.toString(),
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          )
+        ],
+      );
+    }).toList();
+  }
+
 
   /// need to initialize above values to data past 7 days at init
 
@@ -201,6 +223,8 @@ class _DataPageState extends State<DataPage> {
                   log("Do work");
                   startDate = dateRange.first!;
                   simpleDataState.updateData(dateRange.first!, dateRange.last!);
+
+                  simpleDataState.updateWorkouts(dateRange.first!, dateRange.last!);
                 }
                 else{
                   dataState.date1 = dates.first!;
@@ -329,7 +353,17 @@ class _DataPageState extends State<DataPage> {
           SizedBox(height: 20),
           // 3. Exercise
           /// Display workout data
-          _buildPanel(),
+          // Consumer<DataState>(
+          //   builder: (context, dataState, widget) => _buildPanel(dataState),
+          // ),
+          // Text("test"),Text("test"),Text("test"),
+          Consumer<DataState>(
+            /// Column으로 해서 안에 Expansion tile들을 담으면 된다
+            builder: (context, dataState, widget) => Column(
+              children :
+                _buildPanel2(dataState),
+            ),
+          ),
         ],
       )),
       bottomNavigationBar: BNavigationBar(),
