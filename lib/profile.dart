@@ -17,15 +17,30 @@ class Profile extends StatelessWidget {
 
     // Provider를 호출해 접근
     _navigationState = Provider.of<NavigationState>(context);
-    GalleryState simpleGalleryState = Provider.of<GalleryState>(context);
-    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context);
+    GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false);
+
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    final profileImage = simpleWorkoutState.userData[uid]["profileImage"];
+    bool profileImageIsNull = (profileImage == null);
+
+
+    TextEditingController controller = TextEditingController(
+      text: "initial value"
+    );
+    TextFormField t = TextFormField(
+      controller: controller,
+    );
+    controller.text = "new value";
+
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Profile"),
       ),
       body: ProfileScreen(
-
+        auth: FirebaseAuth.instance,
+        avatarSize: 200.0,
         actions: [
           /// When signing out, need to clear out all the user data
           /// Currently signing out doesn't do that
@@ -40,7 +55,7 @@ class Profile extends StatelessWidget {
             Navigator.of(context).popAndPushNamed('/login');
           }),
         ],
-        // showMFATile: true,
+        showMFATile: false,
       ),
     );
   }
