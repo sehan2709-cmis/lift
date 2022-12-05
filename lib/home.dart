@@ -298,7 +298,9 @@ class _HomePageState extends State<HomePage> {
         title: Text("home"),
         actions: [
           IconButton(
-              onPressed: () {
+              onPressed: () async {
+                await simpleWorkoutState.downloadUserData();
+                if (!mounted) return;
                 Navigator.of(context).pushNamed('/profile');
               },
               icon: Icon(Icons.person)),
@@ -309,16 +311,17 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     // log(FieldValue.serverTimestamp().toString());
-          //     // log(Timestamp.now().toString());
-          //     simpleWorkoutState.addSampleWorkout();
-          //     log("HOME :: test button pressed");
-          //     // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
-          //   },
-          //   child: Text("Test Button"),
-          // ),
+          ElevatedButton(
+            onPressed: () {
+              // log(FieldValue.serverTimestamp().toString());
+              // log(Timestamp.now().toString());
+              // simpleWorkoutState.addSampleWorkout();
+              log("HOME :: test button pressed");
+              log(FirebaseAuth.instance.currentUser.toString());
+              // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+            },
+            child: Text("Test Button"),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

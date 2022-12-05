@@ -2,9 +2,11 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:lift/navigation_bar/bottom_navigation_bar.dart';
 import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/NavigationState.dart';
@@ -21,6 +23,16 @@ class Ranking extends StatefulWidget {
   @override
   State<Ranking> createState() => _RankingState();
 }
+
+Future<Map<String, dynamic>> getUserData(String uid) async {
+  Map<String,dynamic> result = {};
+  DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection("User").doc(uid).get();
+  if(doc.exists) {
+    result = doc.data()!;
+  }
+  return result;
+}
+
 
 class _RankingState extends State<Ranking>
     with AutomaticKeepAliveClientMixin<Ranking> {
@@ -40,6 +52,7 @@ class _RankingState extends State<Ranking>
       simpleWorkoutState.downloadVolumeRanking();
       simpleWorkoutState.downloadStreakRanking();
       simpleWorkoutState.downloadSBDSumRanking();
+      await simpleWorkoutState.downloadUserData();
       log("RANK :: downloaded rankings");
     });
 
@@ -57,8 +70,22 @@ class _RankingState extends State<Ranking>
       var uuid = Uuid();
       //workoutState.volumeRankingSize
       for (var i = 0; i < dataSize; i++) {
+
+        /// not used anymore
         final String heroTag = uuid.v4();
-        log(heroTag);
+        // log(heroTag);
+
+        final String targetUid = rankData["user"]!.elementAt(i);
+        final userMap = simpleWorkoutState.userData[targetUid];
+        var nickname;
+        var profileImage;
+        if(userMap != null){
+          nickname = userMap["nickname"];
+          profileImage = userMap["profileImage"];
+        }
+        log("i:$i :: ${simpleWorkoutState.userData}");
+        if(nickname == null) break;
+
         Widget one = Padding(
           padding: EdgeInsets.symmetric(
             vertical: 5,
@@ -72,12 +99,13 @@ class _RankingState extends State<Ranking>
               // 내 uid말고 클릭한 사용자의 uid
               log("RANKING -> GP :: ${rankData["user"]?.elementAt(i)}");
               final String targetUid = rankData["user"]!.elementAt(i);
-              log("+++++++++++++++++++ waiting for gallery");
+              // log("+++++++++++++++++++ waiting for gallery");
               final g = await simpleGalleryState.getGallery(targetUid);
-              log("+++++++++++++++++++ waiting for wd");
+              // log("+++++++++++++++++++ waiting for wd");
               final wd = await simpleWorkoutState.getWorkoutDates(targetUid);
-              log("+++++++++++++++++++ done");
-              Navigator.of(context).pushNamed("/userGobalProfile", arguments: [targetUid, g, wd]);
+              // log("+++++++++++++++++++ done");
+              // Navigator.of(context).pushNamed("/userGobalProfile", arguments: [targetUid, g, wd]);
+              Navigator.of(context).pushNamed("/userGobalProfile", arguments: [nickname, g, wd, profileImage]);
             },
             // highlightColor: Colors.black,
             // splashColor: Colors.blue,
@@ -103,9 +131,19 @@ class _RankingState extends State<Ranking>
                       /// need to change the image to display user image
                       child: Hero(
                         tag: uuid.v4(),
-                        child: Image.network(
-                            "https://firebasestorage.googleapis.com/v0/b/lift-621df.appspot.com/o/lena.png?alt=media&token=46716e0d-2a1f-46bc-a61e-593c4333627e",
-                            fit: BoxFit.cover),
+                        /// 사용자 이미지
+                        child: (profileImage != null) ?
+                        Image.network(
+                            profileImage,
+                            fit: BoxFit.cover,
+                        )
+                            :
+                        ProfilePicture(
+                          name: nickname,
+                          radius: 31,
+                          fontsize: 25,
+                          // random: true,
+                        ),
                       ),
                       clipper: MyClip(),
                     ),
@@ -113,7 +151,9 @@ class _RankingState extends State<Ranking>
                   Expanded(
                     flex: 5,
                     child: Text(
-                      "${rankData["user"]?.elementAt(i)}",
+                      /// 사용자 이름
+                      /// "user" must exist in rankData
+                      "$nickname",
                       // "${workoutState.volumeRanking["user"]?.elementAt(i)}"
                     ),
                   ),
@@ -195,7 +235,7 @@ class _RankingState extends State<Ranking>
 
 class MyClip extends CustomClipper<Rect> {
   Rect getClip(Size size) {
-    return Rect.fromLTWH(0, 7, 36, 36);
+    return Rect.fromLTWH(7, 7, 36, 36);
   }
 
   bool shouldReclip(oldClipper) {

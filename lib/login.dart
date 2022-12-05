@@ -9,6 +9,7 @@ import 'package:lift/state_management/GalleryState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:unique_name_generator/unique_name_generator.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -78,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                   /// since any hacker can get the API link can abuse it (??? not sure)
                   if (await login_sucess) {
                     if(await checkFirstLogin()){
+                      /// when log in for the first time, store user nickname and image url to firebase
                       createUserDoc();
                     }
                     /// when login for the first time, download gallery data
@@ -91,6 +93,13 @@ class _LoginPageState extends State<LoginPage> {
                   final login_sucess = anonymousSignIn();
                   if (await login_sucess) {
                     if(await checkFirstLogin()){
+                      var ung = UniqueNameGenerator(
+                        dictionaries: [adjectives, animals],
+                        style: NameStyle.capital,
+                        separator: '_',
+                      );
+                      String name = ung.generate();
+                      await FirebaseAuth.instance.currentUser?.updateDisplayName(name);
                       createUserDoc();
                     }
                     Navigator.of(context).pop();
@@ -172,7 +181,11 @@ class _LoginPageState extends State<LoginPage> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final userRef = FirebaseFirestore.instance.collection("User").doc(uid);
     // set "firstLoginTime" as current server time
-    userRef.set({"firstLoginTime":FieldValue.serverTimestamp()});
+    await userRef.set({
+      "firstLoginTime":FieldValue.serverTimestamp(),
+      "nickname":FirebaseAuth.instance.currentUser!.displayName,
+      "profileImage":FirebaseAuth.instance.currentUser!.photoURL,
+    });
   }
 
 }

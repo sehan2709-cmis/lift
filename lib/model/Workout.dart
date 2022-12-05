@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 
 class Workout {
   Workout({docId, createDate, exercises}) {
-    this.docId = docId; /// optional
+    if(docId != null) {
+      this.docId = docId;
+    } /// optional
     /// when adding workout offline, this parameter is not required
 
     if(createDate != null) {

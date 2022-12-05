@@ -61,6 +61,8 @@ dependencies:
   drop_shadow: ^0.0.2+1
   uuid: ^3.0.7
   http: ^0.13.5
+  unique_name_generator: ^1.0.0
+  flutter_profile_picture: ^2.0.0
 
 dev_dependencies:
   flutter_test:
