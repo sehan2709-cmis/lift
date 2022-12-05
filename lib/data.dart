@@ -104,6 +104,7 @@ class _DataPageState extends State<DataPage> {
     );
 
     CalendarDatePicker2WithActionButtonsConfig config(workoutDays) => CalendarDatePicker2WithActionButtonsConfig(
+        // firstDate: DateTime.now(),
         dayTextStyle: dayTextStyle,
         calendarType: CalendarDatePicker2Type.range,
         selectedDayHighlightColor: Colors.lightBlueAccent,
@@ -172,6 +173,7 @@ class _DataPageState extends State<DataPage> {
           return dayWidget;
         });
 
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Data"),
@@ -185,30 +187,36 @@ class _DataPageState extends State<DataPage> {
         children: [
           // 1. Calendar
           Consumer<DataState>(
-          builder: (context, dataState, widget) => CalendarDatePicker2(
-            config: config(dataState.workoutDays),
-            onValueChanged: (dates) async {
-              // Selecting date will trigger screen rebuild
-              // re-building screen will cause the selected date to disappear
-              // therefore can't use setState() in here
-              // setState(() {});
-              dateRange = dates;
-              log("DATA :: ${dateRange.toString()}");
-              /// must select 2 dates to display Graph
-              if(dateRange.length == 2){
-                log("Do work");
-                startDate = dateRange.first!;
-                simpleDataState.updateData(dateRange.first!, dateRange.last!);
-              }
-            },
-            onDisplayedMonthChanged: (date) async {
-              await simpleDataState.updateWorkoutDays(date);
-            },
+            builder: (context, dataState, widget) => CalendarDatePicker2(
+              config: config(dataState.workoutDays),
+              onValueChanged: (dates) async {
+                // Selecting date will trigger screen rebuild
+                // re-building screen will cause the selected date to disappear
+                // therefore can't use setState() in here
+                // setState(() {});
+                dateRange = dates;
+                log("DATA :: ${dateRange.toString()}");
+                /// must select 2 dates to display Graph
+                if(dateRange.length == 2){
+                  log("Do work");
+                  startDate = dateRange.first!;
+                  simpleDataState.updateData(dateRange.first!, dateRange.last!);
+                }
+                else{
+                  dataState.date1 = dates.first!;
+                  dataState.date2 = null;
+                }
+              },
+              onDisplayedMonthChanged: (date) async {
+                /// need to preserve previously selected data
+                await simpleDataState.updateWorkoutDays(date);
+              },
 
-            /// initial value should be past 7 days from today
-            /// get today from phone time
-            initialValue: [simpleDataState.date1, simpleDataState.date2],
-          )
+              /// initial value should be past 7 days from today
+              /// get today from phone time
+              // initialValue: [simpleDataState.date1, simpleDataState.date2],
+              initialValue: [dataState.date1, dataState.date2],
+            ),
           ),
           // 2. Graph
           /*
