@@ -39,6 +39,8 @@ class DataState extends ChangeNotifier {
     DateTime date2 = DateTime(now.year, now.month, now.day);
     this.date1 = date1;
     this.date2 = date2;
+    startDate = date1;  /// data.dart
+    log("DATE IS INITIALIZED TO $date1 , $date2 ************");
     // dateRange.clear();
     // dateRange.add(date1);
     // dateRange.add(date2);

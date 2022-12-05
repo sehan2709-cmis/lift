@@ -79,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                   /// since any hacker can get the API link can abuse it (??? not sure)
                   if (await login_sucess) {
                     if(await checkFirstLogin()){
+                      /// when log in for the first time, store user nickname and image url to firebase
                       createUserDoc();
                     }
                     /// when login for the first time, download gallery data
@@ -180,7 +181,11 @@ class _LoginPageState extends State<LoginPage> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final userRef = FirebaseFirestore.instance.collection("User").doc(uid);
     // set "firstLoginTime" as current server time
-    userRef.set({"firstLoginTime":FieldValue.serverTimestamp()});
+    await userRef.set({
+      "firstLoginTime":FieldValue.serverTimestamp(),
+      "nickname":FirebaseAuth.instance.currentUser!.displayName,
+      "profileImage":FirebaseAuth.instance.currentUser!.photoURL,
+    });
   }
 
 }

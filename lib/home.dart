@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               // log(FieldValue.serverTimestamp().toString());
               // log(Timestamp.now().toString());
-              // simpleWorkoutState.addSampleWorkout();
+              simpleWorkoutState.addSampleWorkout();
               log("HOME :: test button pressed");
               log(FirebaseAuth.instance.currentUser.toString());
               // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());

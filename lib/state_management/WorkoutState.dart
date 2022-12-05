@@ -115,6 +115,8 @@ class WorkoutState extends ChangeNotifier {
   late Query<Map<String, dynamic>> streakQuery;
   late Query<Map<String, dynamic>> sbdSumQuery;
 
+  /// user profile data
+  late Map<String, dynamic> userData;
 
   /// initializer
   WorkoutState() {
@@ -266,6 +268,15 @@ class WorkoutState extends ChangeNotifier {
       log("Ranks :: ${sbdSumRanking.toString()}");
       notifyListeners(); // after successfully updating, need to notify listening widgets
     });
+  }
+
+  Future<void> downloadUserData() async {
+    userData = {}; // reset
+    QuerySnapshot<Map<String, dynamic>> collection = await FirebaseFirestore.instance.collection("User").get();
+    for(QueryDocumentSnapshot<Map<String, dynamic>>doc in collection.docs){
+      Map<String, dynamic> data = doc.data();
+      userData["${doc.id}"] = {"nickname": data["nickname"], "profileImage":data["profileImage"]};
+    }
   }
 
   /// change this to download all rankings ??

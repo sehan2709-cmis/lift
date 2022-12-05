@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drop_shadow/drop_shadow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 
 import 'home.dart';
 
@@ -15,11 +16,11 @@ class UserGlobalProfilePage extends StatefulWidget {
 }
 
 class _UserGlobalProfilePageState extends State<UserGlobalProfilePage> {
-
   List<Map<String, dynamic>> gallery = [];
   Map<DateTime, int> currentYearWorkoutDates = {};
 
-  List<StatelessWidget> _buildGridCards(BuildContext context, List<Map<String, dynamic>> gallery) {
+  List<StatelessWidget> _buildGridCards(
+      BuildContext context, List<Map<String, dynamic>> gallery) {
     if (gallery.isEmpty) {
       return const <StatelessWidget>[];
     }
@@ -48,24 +49,24 @@ class _UserGlobalProfilePageState extends State<UserGlobalProfilePage> {
           },
           splashColor: Colors.blue,
           child: CachedNetworkImage(
-              imageUrl: imgUrl,
-              imageBuilder: (context, imageProvider) {
-                return Ink.image(
-                  image: imageProvider,
-                  fit: BoxFit.cover,
-                  onImageError: (object, stacktrace) {
-                    log("HOME :: no image");
-                  },
-                );
-              },
-              placeholder: (context, url) => const SizedBox(
-                width: 10,
-                height: 10,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-             errorWidget: (context, url, error) => const Icon(Icons.error),
+            imageUrl: imgUrl,
+            imageBuilder: (context, imageProvider) {
+              return Ink.image(
+                image: imageProvider,
+                fit: BoxFit.cover,
+                onImageError: (object, stacktrace) {
+                  log("HOME :: no image");
+                },
+              );
+            },
+            placeholder: (context, url) => const SizedBox(
+              width: 10,
+              height: 10,
+              child: Center(child: CircularProgressIndicator()),
             ),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
+        ),
       );
     }).toList();
   }
@@ -74,8 +75,25 @@ class _UserGlobalProfilePageState extends State<UserGlobalProfilePage> {
   Widget build(BuildContext context) {
     final argv = ModalRoute.of(context)!.settings.arguments as List<dynamic>;
     final String uid = argv[0] as String;
-    final List<Map<String, dynamic>> gallery = argv[1] as List<Map<String, dynamic>>;
-    final Map<DateTime, int> currentYearWorkoutDates = argv[2] as Map<DateTime, int>;
+    final List<Map<String, dynamic>> gallery =
+        argv[1] as List<Map<String, dynamic>>;
+    final Map<DateTime, int> currentYearWorkoutDates =
+        argv[2] as Map<DateTime, int>;
+    final String? profileImage = argv[3];
+
+    ImageProvider ip = AssetImage("assets/img/placeholder_image.png");
+    final p = Center(
+      child: ProfilePicture(
+        name: uid,
+        radius: 167/2,
+        fontsize: 80,
+        // random: true,
+      ),
+    );
+    if (profileImage != null) {
+      ip = NetworkImage(profileImage!);
+    }
+    final profileIsNull = (profileImage == null);
 
     return Scaffold(
       appBar: AppBar(
@@ -88,17 +106,15 @@ class _UserGlobalProfilePageState extends State<UserGlobalProfilePage> {
               height: 30,
             ),
             DropShadow(
-              child:
-                  Container(
+              child: Container(
                 height: 167,
                 decoration: BoxDecoration(
-                  image: const DecorationImage(
-                      image: AssetImage("assets/img/placeholder_image.png"),
-                      fit: BoxFit.contain),
+                  image: DecorationImage(image: ip, fit: BoxFit.contain),
                   color: Colors.transparent,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.grey),
                 ),
+                child: profileIsNull?p:null,
               ),
             ),
             Center(

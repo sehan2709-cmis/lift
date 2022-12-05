@@ -25,7 +25,7 @@ class DataPage extends StatefulWidget {
 
 /// should I move this to a provider?
 List<DateTime?> dateRange = [];
-DateTime startDate = DateTime(1);
+DateTime startDateForBottomTitle = DateTime(1);
 
 /// for expansion pannel
 // stores ExpansionPanel state information
@@ -254,7 +254,7 @@ class _DataPageState extends State<DataPage> {
                 /// and the two dates must not be the same
                 if(dateRange.length == 2 && !dates.first!.isAtSameMomentAs(dates.last!)){
                   log("Do work");
-                  startDate = dateRange.first!;
+                  startDateForBottomTitle = dateRange.first!;
                   simpleDataState.updateData(dateRange.first!, dateRange.last!);
 
                   simpleDataState.updateWorkouts(dateRange.first!, dateRange.last!);
@@ -452,6 +452,8 @@ LineChartData mainData(List<FlSpot> data, DateTime startDate, double maxY, doubl
 
   log("vLineInterval : $vLineInterval");
   log("maxX : $maxX");
+  log("^^^^^^^^^^^^^ $startDate ^^^^^^^^^^^^^^");
+  startDateForBottomTitle = startDate;
 
 
   // display all values if days is less than 10
@@ -555,7 +557,8 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
   );
   Widget text;
 
-  DateTime thisDate = startDate.add(Duration(days: value.toInt()));
+  /// global startDate
+  DateTime thisDate = startDateForBottomTitle.add(Duration(days: value.toInt()));
   text = Text("${thisDate.month}/\n${thisDate.day}");
   String dateString = "";
   switch (thisDate.month) {
