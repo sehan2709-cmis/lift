@@ -52,6 +52,7 @@ class BNavigationBar extends StatelessWidget {
               startDate = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
               simpleDataState.initData();
               simpleDataState.updateWorkoutDays(startDate);
+              simpleDataState.updateWorkouts(startDate, now);
               Navigator.of(context).popAndPushNamed('/datapage');
               break;
             case 2: // ranking

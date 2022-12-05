@@ -90,6 +90,7 @@ class _DataPageState extends State<DataPage> {
     );
   }
 
+  // will use this one!
   List<ExpansionTile> _buildPanel2(DataState dataState) {
     return dataState.workouts.map<ExpansionTile>((Workout workout) {
       return ExpansionTile(
@@ -219,7 +220,8 @@ class _DataPageState extends State<DataPage> {
                 dateRange = dates;
                 log("DATA :: ${dateRange.toString()}");
                 /// must select 2 dates to display Graph
-                if(dateRange.length == 2){
+                /// and the two dates must not be the same
+                if(dateRange.length == 2 && !dates.first!.isAtSameMomentAs(dates.last!)){
                   log("Do work");
                   startDate = dateRange.first!;
                   simpleDataState.updateData(dateRange.first!, dateRange.last!);

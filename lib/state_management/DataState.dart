@@ -52,7 +52,7 @@ class DataState extends ChangeNotifier {
   }
 
   Future<void> updateWorkoutDays(DateTime date) async {
-    /// download workout dates info
+    /// download workout dates info for the given date's month
     String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
     DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
         .instance
