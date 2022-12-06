@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:developer';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:draw_graph/draw_graph.dart';
 import 'package:draw_graph/models/feature.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -96,7 +98,7 @@ class _DataPageState extends State<DataPage> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => EditWorkOut(editWorkout: workout,),
-                        ),
+                        ));
                       /// goto edit page
                       ///
                     },
@@ -108,12 +110,89 @@ class _DataPageState extends State<DataPage> {
                       /// delete list tile
                       log("delete pressed!");
                       String uid = FirebaseAuth.instance.currentUser!.uid;
-                      await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
-                      log("delete success!");
+                      // actual deletion should be done lastly
+                      // await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
 
+                      /// when deleting workout data, need to subtract from volume
+                      // 1. download total volume
+                      DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection("User").doc(uid).get();
+                      num totalVolume = doc.data()!["totalVolume"];
+                      log("DELETE ON PROGRESS");
+                      // 2. subtract today volume (from data to delete)
+                      if(workout.todayVolume != null){
+                        totalVolume -= workout.todayVolume!;
+                      }
+                      else {
+                        log("When deleting from data page, workout's todayVolume is null, and so cannot update firebase total volume");
+                      }
+
+                      // 3. update the modified total volume
+                      await FirebaseFirestore.instance.collection("User").doc(uid).set(
+                          {"totalVolume":totalVolume}, SetOptions(merge: true));
+                      // totalVolume updated!
+                      /// update page
                       // after deleting update the context
+
+                      /// modify streak if deleted workout date is inbetween the streaks
+                      /// and if there is no other workout in the selected date
+                      // 1. check if there are more than 1 workout in the selected date
+                      int year = workout.createDate!.year;
+                      int month = workout.createDate!.month;
+                      Timestamp editDate = Timestamp.fromDate(workout.createDate!);
+                      QuerySnapshot<Map<String, dynamic>> temp = await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").where("CreateDate", isEqualTo: editDate).get();
+                      log("DOC to delete is of date: ${editDate}\n" +
+                      "${temp.docs.isNotEmpty}\n" +
+                          "${temp.docs.length}"
+                      );
+                      if(temp.docs.isNotEmpty || temp.docs.length == 1){
+                        log("DELETE ONLY ONE");
+                        DocumentSnapshot<Map<String, dynamic>> daysData = await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).get();
+                        List<dynamic> monthData = daysData.data()![month.toString()];
+                        monthData[workout.createDate!.day - 1] = false;
+
+                        // update WorkoutDays
+                        await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).set(
+                            {"${month}":monthData}, SetOptions(merge: true));
+
+                        // update Streak
+                        // SS = Streak Start date
+                        DateTime SS = doc.data()!["streakStartDate"].toDate();
+                        DateTime del = workout.createDate!;
+                        SS = DateTime(SS.year, SS.month, SS.day);
+                        del = DateTime(del.year, del.month, del.day);
+                        if(del.isAfter(SS)){
+                          log("DELETE STREAK");
+                          int minusStreak = SS.difference(del).inDays;
+                          int currentStreak = doc.data()!["streak"];
+                          int newStreak = currentStreak - minusStreak;
+                          DateTime del_next = DateTime(del.year, del.month, del.day).add(const Duration(days: 1));
+                          Timestamp ts_del_next = Timestamp.fromDate(del_next);
+                          await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":newStreak, "streakStartDate":ts_del_next}, SetOptions(merge: true));
+                        }
+                        else if(del.isAtSameMomentAs(SS)){
+                          // streak started today
+                          // reset streak
+                          // remove streakStartDate field
+                          await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":0, "streakStartDate":FieldValue.delete()}, SetOptions(merge: true));
+                        }
+                      }
+                      log("DELETE SUCESS");
+
+                      // actual delete
+                      await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
+
                       await dataState.reloadDataAndWorkouts();
                     },
+                    // onPressed: () async {
+                    //   /// delete list tile
+                    //   log("delete pressed!");
+                    //   String uid = FirebaseAuth.instance.currentUser!.uid;
+                    //   await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
+                    //   log("delete success!");
+                    //
+                    //   // after deleting update the context
+                    //   await dataState.reloadDataAndWorkouts();
+                    // },
                   ),
                 ],
               )
@@ -125,7 +204,7 @@ class _DataPageState extends State<DataPage> {
     );
   }
 
-  /// will use this one!
+  /// This one is not used!
   List<ExpansionTile> _buildPanel2(DataState dataState) {
     return dataState.workouts.map<ExpansionTile>((Workout workout) {
       return ExpansionTile(
