@@ -14,6 +14,7 @@ import 'package:lift/state_management/WorkoutState.dart';
 import 'package:lift/workouttest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import 'navigation_bar/bottom_navigation_bar.dart';
 
@@ -36,7 +37,7 @@ class Item {
     required this.headerValue,
     this.isExpanded = false,
   });
-
+  String id = const Uuid().v4();
   String expandedValue;
   String headerValue;
   bool isExpanded;
@@ -61,32 +62,60 @@ class _DataPageState extends State<DataPage> {
   // to build expansion panel items
   // this one is abandoned
   Widget _buildPanel(DataState dataState) {
-    return ExpansionPanelList(
-      expansionCallback: (int index, bool isExpanded) {
-        setState(() {
-          _data[index].isExpanded = !isExpanded;
-        });
-      },
-      children: _data.map<ExpansionPanel>((Item item) {
-        return ExpansionPanel(
+    return ExpansionPanelList.radio(
+      children: dataState.workouts.map<ExpansionPanelRadio>((Workout workout) {
+        return ExpansionPanelRadio(
           canTapOnHeader: true,
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
-
-              title: Text(item.headerValue),
+              title: Text(
+                DateFormat("yyyy MMM dd, EEE  hh:mm").format(workout.createDate!),
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+              ),
             );
           },
-          body: ListTile(
-              title: Text(item.expandedValue),
-              subtitle: const Text('To delete this panel, tap the trash can icon'),
-              trailing: const Icon(Icons.delete),
-              onTap: () {
-                setState(() {
-                  /// delete function
-                  _data.removeWhere((Item currentItem) => item == currentItem);
-                });
-              }),
-          isExpanded: item.isExpanded,
+          body: Column(
+            children: [
+              ListTile(
+                title: Text(
+                  workout.toWorkoutOnlyString(),
+                  // "adfadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfadadadfad",
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                trailing: null,
+                onTap: null,
+              ),
+              Row(
+                // mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    color: Colors.blueAccent,
+                    onPressed: () {
+                      /// goto edit page
+                      ///
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever),
+                    color: Colors.redAccent,
+                    onPressed: () async {
+                      /// delete list tile
+                      log("delete pressed!");
+                      String uid = FirebaseAuth.instance.currentUser!.uid;
+                      await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
+                      log("delete success!");
+
+                      // after deleting update the context
+                      await dataState.reloadDataAndWorkouts();
+                    },
+                  ),
+                ],
+              )
+            ],
+          ),
+          value: const Uuid().v4(),
         );
       }).toList(),
     );
@@ -136,6 +165,7 @@ class _DataPageState extends State<DataPage> {
                   String uid = FirebaseAuth.instance.currentUser!.uid;
                   await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
                   log("delete success!");
+
                   // after deleting update the context
                   await dataState.reloadDataAndWorkouts();
                 },
@@ -399,9 +429,10 @@ class _DataPageState extends State<DataPage> {
           Consumer<DataState>(
             /// Column으로 해서 안에 Expansion tile들을 담으면 된다
             builder: (context, dataState, widget) => Column(
-              children :
-                _buildPanel2(dataState),
-            ),
+              children :[
+                _buildPanel(dataState),
+  ],
+            ) ,
           ),
         ],
       )),
