@@ -93,6 +93,11 @@ class _DataPageState extends State<DataPage> {
                     icon: const Icon(Icons.edit),
                     color: Colors.blueAccent,
                     onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EditWorkOut(editWorkout: workout,),
+                        ),
+                      );
                       /// goto edit page
                       ///
                     },
