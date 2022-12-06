@@ -35,7 +35,7 @@ class DataState extends ChangeNotifier {
   void init() {
     /// dates are initialized to today and today-7
     DateTime now = DateTime.now();
-    
+
     DateTime date1 = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
     DateTime date2 = DateTime(now.year, now.month, now.day);
     this.date1 = date1;
@@ -167,7 +167,7 @@ class DataState extends ChangeNotifier {
         DateTime createDate = createDateStamp.toDate();
         // log("bye ${createDate.toString()}");
         final workout = Workout(docId: doc.id, createDate: createDate, exercises: exercises,);
-
+        workout.todayVolume = doc.data()!["todayVolume"];
         workouts.add(workout);
         log("\t\t workout added!");
       }
