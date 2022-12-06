@@ -46,15 +46,18 @@ class _RankingState extends State<Ranking>
     WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false);
     GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
 
-    Future.delayed(Duration.zero, () async {
-      /// 아직 context가 만들어 지지 않았는데 context의 provider를 접근하려고 하는게 문제가 생기는 것 같다
-      /// delayed에 이렇게 넣으면 build가 끝난 다음에 실행되기 때문에 괜찮다
-      simpleWorkoutState.downloadVolumeRanking();
-      simpleWorkoutState.downloadStreakRanking();
-      simpleWorkoutState.downloadSBDSumRanking();
-      await simpleWorkoutState.downloadUserData();
-      log("RANK :: downloaded rankings");
-    });
+    /// 사실 랭킹 페이지는 실시간으로 업데이트 될 필요도 없고
+    ///
+    // Future.delayed(Duration.zero, () async {
+    //   /// 아직 context가 만들어 지지 않았는데 context의 provider를 접근하려고 하는게 문제가 생기는 것 같다
+    //   /// delayed에 이렇게 넣으면 build가 끝난 다음에 실행되기 때문에 괜찮다
+    //   await simpleWorkoutState.downloadVolumeRanking();
+    //   await simpleWorkoutState.downloadStreakRanking();
+    //   await simpleWorkoutState.downloadSBDSumRanking();
+    //   await simpleWorkoutState.downloadUserData();
+    //   simpleWorkoutState.notifyListeners();
+    //   log("RANK :: downloaded rankings");
+    // });
 
     List<Widget> _rankingBuilder(
         String name,
@@ -83,7 +86,7 @@ class _RankingState extends State<Ranking>
           nickname = userMap["nickname"];
           profileImage = userMap["profileImage"];
         }
-        log("i:$i :: ${simpleWorkoutState.userData}");
+        // log("i:$i :: ${simpleWorkoutState.userData}");
         if(nickname == null) break;
 
         Widget one = Padding(

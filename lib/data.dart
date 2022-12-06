@@ -53,14 +53,14 @@ List<Item> generateItems(int numberOfItems) {
 }
 
 class _DataPageState extends State<DataPage> {
-  final List<Item> _data = generateItems(8);
+  // final List<Item> _data = generateItems(8);
+  /// workout days for the month
   List<bool> workoutDays = [true, true, false, true, true];
 
   /// need to change when page changes
   // List<bool> workoutDays = [true, true, true, false];
 
-  // to build expansion panel items
-  // this one is abandoned
+  /// USE THIS ONE !
   Widget _buildPanel(DataState dataState) {
     return ExpansionPanelList.radio(
       children: dataState.workouts.map<ExpansionPanelRadio>((Workout workout) {
@@ -166,7 +166,57 @@ class _DataPageState extends State<DataPage> {
                   await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
                   log("delete success!");
 
+                  /// when deleting workout data, need to subtract from volume
+                  // 1. download total volume
+                  DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection("User").doc(uid).get();
+                  num totalVolume = doc.data()!["totalVolume"];
+                  // 2. subtract today volume (from data to delete)
+                  if(workout.todayVolume != null){
+                    totalVolume -= workout.todayVolume!;
+                  }
+                  else {
+                    log("When deleting from data page, workout's todayVolume is null, and so cannot update firebase total volume");
+                  }
+
+                  // 3. update the modified total volume
+                  await FirebaseFirestore.instance.collection("User").doc(uid).set(
+                      {"totalVolume":totalVolume}, SetOptions(merge: true));
+                  // totalVolume updated!
+                  /// update page
                   // after deleting update the context
+
+                  /// modify streak if deleted workout date is inbetween the streaks
+                  /// and if there is no other workout in the selected date
+                  // 1. check if there are more than 1 workout in the selected date
+                  int year = workout.createDate!.year;
+                  int month = workout.createDate!.month;
+                  Timestamp editDate = Timestamp.fromDate(workout.createDate!);
+                  QuerySnapshot<Map<String, dynamic>> temp = await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").where("CreateDate", isEqualTo: editDate).get();
+
+                  if(temp.docs.isNotEmpty || temp.docs.length == 1){
+                    DocumentSnapshot<Map<String, dynamic>> daysData = await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).get();
+                    List<bool> monthData = daysData.data()![month];
+                    monthData[workout.createDate!.day - 1] = false;
+
+                    // update WorkoutDays
+                    await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).set(
+                        {"${month}":monthData}, SetOptions(merge: true));
+
+                    // update Streak
+                    // SS = Streak Start date
+                    DateTime SS = doc.data()!["streakStartDate"].toDate();
+                    DateTime del = workout.createDate!;
+                    SS = DateTime(SS.year, SS.month, SS.day);
+                    del = DateTime(del.year, del.month, del.day);
+                    if(del.isAfter(SS)){
+                      int minusStreak = SS.difference(del).inDays;
+                      int currentStreak = doc.data()!["streak"];
+                      int newStreak = currentStreak - minusStreak;
+                      DateTime del_next = DateTime(del.year, del.month, del.day).add(const Duration(days: 1));
+                      Timestamp ts_del_next = Timestamp.fromDate(del_next);
+                      await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":newStreak, "streakStartDate":ts_del_next}, SetOptions(merge: true));
+                    }
+                  }
                   await dataState.reloadDataAndWorkouts();
                 },
               ),
