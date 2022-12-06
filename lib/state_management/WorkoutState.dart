@@ -345,6 +345,12 @@ class WorkoutState extends ChangeNotifier {
     // since above operation is asynchronous, notifyListeners() must be called inside
   }
 
+  void editWorkout(Workout workout) async{
+    final data = workout.data();
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+  }
+
   /// Upload a workout to Firestore
   /// It creates document of a workout with random id
   /// Checks ranking data and updates it too

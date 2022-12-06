@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:lift/model/Exercise.dart';
 import 'package:lift/model/Workout.dart';
 import 'package:lift/state_management/NavigationState.dart';
@@ -42,6 +43,11 @@ class _WorkoutTest extends State<WorkoutTest> {
             width: 70,
             height: 30,
             child: TextFormField(
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
+
               controller: weightControl[count-1],
 
               decoration: InputDecoration(
@@ -54,6 +60,10 @@ class _WorkoutTest extends State<WorkoutTest> {
             width: 70,
             height: 30,
             child: TextFormField(
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly
+              ],
               controller: repsControl[count-1],
               decoration: InputDecoration(
                 labelText: "reps",
