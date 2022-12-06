@@ -311,17 +311,17 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 20,
           ),
-          ElevatedButton(
-            onPressed: () {
-              // log(FieldValue.serverTimestamp().toString());
-              // log(Timestamp.now().toString());
-              // simpleWorkoutState.addSampleWorkout();
-              log("HOME :: test button pressed");
-              log(FirebaseAuth.instance.currentUser.toString());
-              // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
-            },
-            child: Text("Test Button"),
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     // log(FieldValue.serverTimestamp().toString());
+          //     // log(Timestamp.now().toString());
+          //     simpleWorkoutState.addSampleWorkout();
+          //     log("HOME :: test button pressed");
+          //     log(FirebaseAuth.instance.currentUser.toString());
+          //     // Provider.of<WorkoutState>(context, listen: false).addWorkout(Workout());
+          //   },
+          //   child: Text("Test Button"),
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -355,7 +355,7 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
               child: Consumer<WorkoutState>(
                 builder: (context, galleryState, _) => HeatMap(
-                  startDate: DateTime(2022, 1, 1),
+                  startDate: DateTime(DateTime.now().year),
                   size: 16,
                   // need to get the dataset from provider?
                   // fixed fill color value
