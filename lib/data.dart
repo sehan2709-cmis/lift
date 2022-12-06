@@ -160,21 +160,27 @@ class _DataPageState extends State<DataPage> {
                         DateTime del = workout.createDate!;
                         SS = DateTime(SS.year, SS.month, SS.day);
                         del = DateTime(del.year, del.month, del.day);
-                        if(del.isAfter(SS)){
-                          log("DELETE STREAK");
-                          int minusStreak = SS.difference(del).inDays;
+                        DateTime lastWorkoutDate = doc.data()!["lastWorkout"].toDate();
+                        lastWorkoutDate = DateTime(lastWorkoutDate.year, lastWorkoutDate.month, lastWorkoutDate.day);
+                        if(lastWorkoutDate.isAtSameMomentAs(del)){
+                          log("DELETE STREAK - same moment");
+                          await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":0, "streakStartDate":FieldValue.delete()}, SetOptions(merge: true));
+                        }
+                        else if(del.isAfter(SS) || del.isAtSameMomentAs(SS)){
+                          log("DELETE STREAK - before last workout");
+                          int minusStreak = SS.difference(del).inDays+1;
                           int currentStreak = doc.data()!["streak"];
                           int newStreak = currentStreak - minusStreak;
                           DateTime del_next = DateTime(del.year, del.month, del.day).add(const Duration(days: 1));
                           Timestamp ts_del_next = Timestamp.fromDate(del_next);
                           await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":newStreak, "streakStartDate":ts_del_next}, SetOptions(merge: true));
                         }
-                        else if(del.isAtSameMomentAs(SS)){
-                          // streak started today
-                          // reset streak
-                          // remove streakStartDate field
-                          await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":0, "streakStartDate":FieldValue.delete()}, SetOptions(merge: true));
-                        }
+                        // else if(del.isAtSameMomentAs(SS)){
+                        //   // streak started today
+                        //   // reset streak
+                        //   // remove streakStartDate field
+                        //   await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":0, "streakStartDate":FieldValue.delete()}, SetOptions(merge: true));
+                        // }
                       }
                       log("DELETE SUCESS");
 

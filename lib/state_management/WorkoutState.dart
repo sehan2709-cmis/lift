@@ -362,10 +362,34 @@ class WorkoutState extends ChangeNotifier {
     // since above operation is asynchronous, notifyListeners() must be called inside
   }
 
-  void editWorkout(Workout workout) async{
+  void editWorkout(Workout original, Workout workout) async{
     final data = workout.data();
     String uid = FirebaseAuth.instance.currentUser!.uid;
+    DocumentReference<Map<String, dynamic>> userDocRef = userCollectionRef.doc(uid);
+    /// calculate total volume of the workout
+    num totalVolume = 0;
+    for (final exercise in workout.exercises) {
+      for (final set in exercise.Sets) {
+        totalVolume += set['weight']! * set['reps']!;
+      }
+    }
+    data["todayVolume"] = totalVolume;
+    data["CreateDate"] = workout.createDate;
 
+    int originalVolume = original.todayVolume!;
+
+    DocumentSnapshot<Map<String, dynamic>> userDoc = await userDocRef.get();
+    try {
+      totalVolume += userDoc.get('totalVolume') as int;
+      totalVolume -= originalVolume;
+    } catch (e) {
+      // log("there is no field");
+    } finally {
+      /// maybe doesn't really need to wait for finish uploading
+      await userDocRef.set({"totalVolume": totalVolume}, SetOptions(merge: true));
+    }
+
+    await userDocRef.collection("Workout").doc(workout.docId).set(data, SetOptions(merge: true));
   }
 
   /// Upload a workout to Firestore
@@ -385,16 +409,19 @@ class WorkoutState extends ChangeNotifier {
         totalVolume += set['weight']! * set['reps']!;
       }
     }
+
     data["todayVolume"] = totalVolume;
 
     /// only for add workout
     /// upload workout data
-    data["CreateDate"] =
-        FieldValue.serverTimestamp(); // set to server timestamp
+
+    data["CreateDate"] = FieldValue.serverTimestamp();
+    // data["CreateDate"] = Timestamp.fromDate(DateTime(2022, 11, 29));
+
+    // set to server timestamp
     // <Map<String, dynamic>>
     DocumentReference addedDocRef =
     await userDocRef.collection("Workout").add(data);
-
 
     /// Get timestamp of the added workout
     // <Map<String, dynamic>>
