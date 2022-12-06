@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:unique_name_generator/unique_name_generator.dart';
 
+import 'main.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -82,7 +84,14 @@ class _LoginPageState extends State<LoginPage> {
                       /// when log in for the first time, store user nickname and image url to firebase
                       createUserDoc();
                     }
-                    /// when login for the first time, download gallery data
+                    /// when login, download gallery data
+
+                    /// Below streak check logic is not needed for anonymous login
+                    /// if user is logged in check for streak reset
+                    User? user = FirebaseAuth.instance.currentUser;
+                    if(user != null) {
+                      await checkUserStreakState(user);
+                    }
                     simpleGalleryState.readGallery();
                     Navigator.of(context).pop();
                   }

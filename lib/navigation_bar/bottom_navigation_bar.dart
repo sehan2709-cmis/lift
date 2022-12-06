@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:lift/state_management/NavigationState.dart';
+import 'package:lift/state_management/WorkoutState.dart';
 import 'package:provider/provider.dart';
 
 import '../data.dart';
@@ -16,6 +17,7 @@ class BNavigationBar extends StatelessWidget {
     NavigationState navigationState = Provider.of<NavigationState>(context, listen: false);
     GalleryState simpleGalleryState = Provider.of<GalleryState>(context, listen: false);
     DataState simpleDataState = Provider.of<DataState>(context, listen: false);
+    WorkoutState simpleWorkoutState = Provider.of<WorkoutState>(context, listen: false);
 
     return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -45,6 +47,8 @@ class BNavigationBar extends StatelessWidget {
           switch(index) {
             case 0: // home
               simpleGalleryState.readGallery();
+              simpleWorkoutState.getMyStreak();
+
               Navigator.of(context).popAndPushNamed('/');
               break;
             case 1: // data
@@ -61,6 +65,12 @@ class BNavigationBar extends StatelessWidget {
               Navigator.of(context).popAndPushNamed('/datapage');
               break;
             case 2: // ranking
+              await simpleWorkoutState.downloadVolumeRanking();
+              await simpleWorkoutState.downloadStreakRanking();
+              await simpleWorkoutState.downloadSBDSumRanking();
+              await simpleWorkoutState.downloadUserData();
+              /// 굳이 notify listener를 부를 필요가 없다?
+              log("RANK :: downloaded rankings");
               Navigator.of(context).popAndPushNamed('/ranking');
               break;
             case 3: // workout

@@ -46,6 +46,8 @@ class GalleryState extends ChangeNotifier {
 
   /// Read current user's Gallery data
   Future<void> readGallery() async {
+    if(FirebaseAuth.instance.currentUser == null) return;
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     QuerySnapshot<Map<String, dynamic>> res = await FirebaseFirestore.instance
         .collection("User")
