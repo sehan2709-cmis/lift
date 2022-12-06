@@ -53,14 +53,14 @@ List<Item> generateItems(int numberOfItems) {
 }
 
 class _DataPageState extends State<DataPage> {
-  final List<Item> _data = generateItems(8);
+  // final List<Item> _data = generateItems(8);
+  /// workout days for the month
   List<bool> workoutDays = [true, true, false, true, true];
 
   /// need to change when page changes
   // List<bool> workoutDays = [true, true, true, false];
 
-  // to build expansion panel items
-  // this one is abandoned
+  /// USE THIS ONE !
   Widget _buildPanel(DataState dataState) {
     return ExpansionPanelList.radio(
       children: dataState.workouts.map<ExpansionPanelRadio>((Workout workout) {
@@ -166,7 +166,57 @@ class _DataPageState extends State<DataPage> {
                   await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").doc(workout.docId).delete();
                   log("delete success!");
 
+                  /// when deleting workout data, need to subtract from volume
+                  // 1. download total volume
+                  DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection("User").doc(uid).get();
+                  num totalVolume = doc.data()!["totalVolume"];
+                  // 2. subtract today volume (from data to delete)
+                  if(workout.todayVolume != null){
+                    totalVolume -= workout.todayVolume!;
+                  }
+                  else {
+                    log("When deleting from data page, workout's todayVolume is null, and so cannot update firebase total volume");
+                  }
+
+                  // 3. update the modified total volume
+                  await FirebaseFirestore.instance.collection("User").doc(uid).set(
+                      {"totalVolume":totalVolume}, SetOptions(merge: true));
+                  // totalVolume updated!
+                  /// update page
                   // after deleting update the context
+
+                  /// modify streak if deleted workout date is inbetween the streaks
+                  /// and if there is no other workout in the selected date
+                  // 1. check if there are more than 1 workout in the selected date
+                  int year = workout.createDate!.year;
+                  int month = workout.createDate!.month;
+                  Timestamp editDate = Timestamp.fromDate(workout.createDate!);
+                  QuerySnapshot<Map<String, dynamic>> temp = await FirebaseFirestore.instance.collection("User").doc(uid).collection("Workout").where("CreateDate", isEqualTo: editDate).get();
+
+                  if(temp.docs.isNotEmpty || temp.docs.length == 1){
+                    DocumentSnapshot<Map<String, dynamic>> daysData = await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).get();
+                    List<bool> monthData = daysData.data()![month];
+                    monthData[workout.createDate!.day - 1] = false;
+
+                    // update WorkoutDays
+                    await FirebaseFirestore.instance.collection("User").doc(uid).collection("WorkoutDates").doc(year.toString()).set(
+                        {"${month}":monthData}, SetOptions(merge: true));
+
+                    // update Streak
+                    // SS = Streak Start date
+                    DateTime SS = doc.data()!["streakStartDate"].toDate();
+                    DateTime del = workout.createDate!;
+                    SS = DateTime(SS.year, SS.month, SS.day);
+                    del = DateTime(del.year, del.month, del.day);
+                    if(del.isAfter(SS)){
+                      int minusStreak = SS.difference(del).inDays;
+                      int currentStreak = doc.data()!["streak"];
+                      int newStreak = currentStreak - minusStreak;
+                      DateTime del_next = DateTime(del.year, del.month, del.day).add(const Duration(days: 1));
+                      Timestamp ts_del_next = Timestamp.fromDate(del_next);
+                      await FirebaseFirestore.instance.collection("User").doc(uid).set({"streak":newStreak, "streakStartDate":ts_del_next}, SetOptions(merge: true));
+                    }
+                  }
                   await dataState.reloadDataAndWorkouts();
                 },
               ),
@@ -194,7 +244,7 @@ class _DataPageState extends State<DataPage> {
     );
 
     CalendarDatePicker2WithActionButtonsConfig config(workoutDays) => CalendarDatePicker2WithActionButtonsConfig(
-        // firstDate: DateTime.now(),
+      // firstDate: DateTime.now(),
         dayTextStyle: dayTextStyle,
         calendarType: CalendarDatePicker2Type.range,
         selectedDayHighlightColor: Colors.lightBlueAccent,
@@ -271,48 +321,48 @@ class _DataPageState extends State<DataPage> {
       body: SafeArea(
           child: ListView(
 
-        physics: const ScrollPhysics(),
-        shrinkWrap: true,
-        primary: true,
-        children: [
-          // 1. Calendar
-          Consumer<DataState>(
-            builder: (context, dataState, widget) => CalendarDatePicker2(
-              config: config(dataState.workoutDays),
-              onValueChanged: (dates) async {
-                // Selecting date will trigger screen rebuild
-                // re-building screen will cause the selected date to disappear
-                // therefore can't use setState() in here
-                // setState(() {});
-                dateRange = dates;
-                log("DATA :: ${dateRange.toString()}");
-                /// must select 2 dates to display Graph
-                /// and the two dates must not be the same
-                if(dateRange.length == 2 && !dates.first!.isAtSameMomentAs(dates.last!)){
-                  log("Do work");
-                  startDateForBottomTitle = dateRange.first!;
-                  simpleDataState.updateData(dateRange.first!, dateRange.last!);
+            physics: const ScrollPhysics(),
+            shrinkWrap: true,
+            primary: true,
+            children: [
+              // 1. Calendar
+              Consumer<DataState>(
+                builder: (context, dataState, widget) => CalendarDatePicker2(
+                  config: config(dataState.workoutDays),
+                  onValueChanged: (dates) async {
+                    // Selecting date will trigger screen rebuild
+                    // re-building screen will cause the selected date to disappear
+                    // therefore can't use setState() in here
+                    // setState(() {});
+                    dateRange = dates;
+                    log("DATA :: ${dateRange.toString()}");
+                    /// must select 2 dates to display Graph
+                    /// and the two dates must not be the same
+                    if(dateRange.length == 2 && !dates.first!.isAtSameMomentAs(dates.last!)){
+                      log("Do work");
+                      startDateForBottomTitle = dateRange.first!;
+                      simpleDataState.updateData(dateRange.first!, dateRange.last!);
 
-                  simpleDataState.updateWorkouts(dateRange.first!, dateRange.last!);
-                }
-                else{
-                  dataState.date1 = dates.first!;
-                  dataState.date2 = null;
-                }
-              },
-              onDisplayedMonthChanged: (date) async {
-                /// need to preserve previously selected data
-                await simpleDataState.updateWorkoutDays(date);
-              },
+                      simpleDataState.updateWorkouts(dateRange.first!, dateRange.last!);
+                    }
+                    else{
+                      dataState.date1 = dates.first!;
+                      dataState.date2 = null;
+                    }
+                  },
+                  onDisplayedMonthChanged: (date) async {
+                    /// need to preserve previously selected data
+                    await simpleDataState.updateWorkoutDays(date);
+                  },
 
-              /// initial value should be past 7 days from today
-              /// get today from phone time
-              // initialValue: [simpleDataState.date1, simpleDataState.date2],
-              initialValue: [dataState.date1, dataState.date2],
-            ),
-          ),
-          // 2. Graph
-          /*
+                  /// initial value should be past 7 days from today
+                  /// get today from phone time
+                  // initialValue: [simpleDataState.date1, simpleDataState.date2],
+                  initialValue: [dataState.date1, dataState.date2],
+                ),
+              ),
+              // 2. Graph
+              /*
           Padding(
             padding: EdgeInsets.all(10),
             child: Consumer<WorkoutState>(
@@ -383,59 +433,59 @@ class _DataPageState extends State<DataPage> {
             ),
           ),
           */
-          // 2.5 Graph 2
-          Text(" Graph - volume", style: TextStyle(fontSize: 30),),
-          AspectRatio(
-            aspectRatio: 1.5,
-            child: DecoratedBox(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(18),
-                ),
-                /// background color
-                color: Color(0xfff3f6f4),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  right: 18,
-                  left: 12,
-                  top: 24,
-                  bottom: 12,
-                ),
-                /// This is where Graph widget is called
-                child: Consumer<DataState>(
-                  builder: (context, dataState, widget) =>
-                    LineChart(
-                      mainData(
-                          dataState.data,
-                          dataState.startDate,
-                          dataState.maxY,
-                          dataState.maxX
-                      ),
+              // 2.5 Graph 2
+              Text(" Graph - volume", style: TextStyle(fontSize: 30),),
+              AspectRatio(
+                aspectRatio: 1.5,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(18),
                     ),
+                    /// background color
+                    color: Color(0xfff3f6f4),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      right: 18,
+                      left: 12,
+                      top: 24,
+                      bottom: 12,
+                    ),
+                    /// This is where Graph widget is called
+                    child: Consumer<DataState>(
+                      builder: (context, dataState, widget) =>
+                          LineChart(
+                            mainData(
+                                dataState.data,
+                                dataState.startDate,
+                                dataState.maxY,
+                                dataState.maxX
+                            ),
+                          ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(" Workouts", style: TextStyle(fontSize: 30),),
-          SizedBox(height: 20),
-          // 3. Exercise
-          /// Display workout data
-          // Consumer<DataState>(
-          //   builder: (context, dataState, widget) => _buildPanel(dataState),
-          // ),
-          // Text("test"),Text("test"),Text("test"),
-          Consumer<DataState>(
-            /// Column으로 해서 안에 Expansion tile들을 담으면 된다
-            builder: (context, dataState, widget) => Column(
-              children :[
-                _buildPanel(dataState),
-  ],
-            ) ,
-          ),
-        ],
-      )),
+              SizedBox(height: 20),
+              Text(" Workouts", style: TextStyle(fontSize: 30),),
+              SizedBox(height: 20),
+              // 3. Exercise
+              /// Display workout data
+              // Consumer<DataState>(
+              //   builder: (context, dataState, widget) => _buildPanel(dataState),
+              // ),
+              // Text("test"),Text("test"),Text("test"),
+              Consumer<DataState>(
+                /// Column으로 해서 안에 Expansion tile들을 담으면 된다
+                builder: (context, dataState, widget) => Column(
+                  children :[
+                    _buildPanel(dataState),
+                  ],
+                ) ,
+              ),
+            ],
+          )),
       bottomNavigationBar: BNavigationBar(),
     );
   }
@@ -599,45 +649,45 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
   text = Text("${thisDate.month}/\n${thisDate.day}");
   String dateString = "";
   switch (thisDate.month) {
-  case 1:
-    dateString += "JAN";
-    break;
-  case 2:
-    dateString += "FEB";
-    break;
-  case 3:
-    dateString += "MAR";
-    break;
-  case 4:
-    dateString += "APR";
-    break;
-  case 5:
-    dateString += "MAY";
-    break;
-  case 6:
-    dateString += "JUN";
-    break;
-  case 7:
-    dateString += "JUL";
-    break;
-  case 8:
-    dateString += "AUG";
-    break;
-  case 9:
-    dateString += "SEP";
-    break;
-  case 10:
-    dateString += "OCT";
-    break;
-  case 11:
-    dateString += "NOV";
-    break;
-  case 12:
-    dateString += "DEC";
-    break;
-  default:
-    dateString += "???";
-    break;
+    case 1:
+      dateString += "JAN";
+      break;
+    case 2:
+      dateString += "FEB";
+      break;
+    case 3:
+      dateString += "MAR";
+      break;
+    case 4:
+      dateString += "APR";
+      break;
+    case 5:
+      dateString += "MAY";
+      break;
+    case 6:
+      dateString += "JUN";
+      break;
+    case 7:
+      dateString += "JUL";
+      break;
+    case 8:
+      dateString += "AUG";
+      break;
+    case 9:
+      dateString += "SEP";
+      break;
+    case 10:
+      dateString += "OCT";
+      break;
+    case 11:
+      dateString += "NOV";
+      break;
+    case 12:
+      dateString += "DEC";
+      break;
+    default:
+      dateString += "???";
+      break;
   }
 
   dateString += "\n  ";
@@ -667,7 +717,7 @@ Widget leftTitleWidgets(double value, TitleMeta meta) {
   }
   switch (value.toInt()) {
     case 1:
-      /// set text according to the actual maximum value of y
+    /// set text according to the actual maximum value of y
     /// need to get it from external variable
     /// can't pass value through parameter..?
       text = '10K';
@@ -679,7 +729,7 @@ Widget leftTitleWidgets(double value, TitleMeta meta) {
       text = '50k';
       break;
     default:
-      // return const Text('a', style: style);
+    // return const Text('a', style: style);
       return Container();
   }
 
@@ -737,15 +787,3 @@ Future<List<FlSpot>> getDataBetweenDates(DateTime date1, DateTime date2) async {
   // FlSpot(0, 3)
   return chartData;
 }
-
-
-
-
-
-
-
-
-
-
-
-

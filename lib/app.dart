@@ -78,6 +78,7 @@ class App extends StatelessWidget {
             '/posepage': (context) => PoseDetectionPage(),
             '/posedemo': (context) => PoseDetectorView(),
             '/userGobalProfile': (context) => UserGlobalProfilePage(),
+            '/userGobalProfile': (context) => UserGlobalProfilePage(),
           },
     );
   }
