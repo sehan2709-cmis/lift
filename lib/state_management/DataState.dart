@@ -47,12 +47,12 @@ class DataState extends ChangeNotifier {
     // dateRange.add(date2);
   }
 
-  void initData() {
+  Future<void> initData() async {
     log("Initializing DataPage");
     log("${date1}");
     if(date2 != null) {
       log("${date2!}");
-      updateData(date1, date2!);
+      await updateData(date1, date2!);
     }
   }
 
