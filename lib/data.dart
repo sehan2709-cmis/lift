@@ -97,9 +97,7 @@ class _DataPageState extends State<DataPage> {
                         MaterialPageRoute(
                           builder: (context) => EditWorkOut(editWorkout: workout,),
                         ),
-                      /// goto edit page
-                      ///
-                    },
+                      );},
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_forever),
