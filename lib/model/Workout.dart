@@ -24,7 +24,9 @@ class Workout {
 
   DateTime? createDate = DateTime.now();
   String docId = "";
+  int? todayVolume;
   List<Exercise> get exercises => _exercises;
+
 
   List<Exercise> _exercises = [];
   set exercises(List<Exercise> value) {

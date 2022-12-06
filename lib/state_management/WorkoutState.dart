@@ -45,7 +45,9 @@ class WorkoutState extends ChangeNotifier {
     resetStreakRanking();
     resetSBDSumRanking();
     resetVolumeRanking();
-    myStreak = 0;
+    myStreak = 0; // reset myStreak
+    currentYearWorkoutDates.clear();
+    notifyListeners();
   }
 
   /// workoutDates
@@ -84,7 +86,8 @@ class WorkoutState extends ChangeNotifier {
     currentYearWorkoutDates.clear();
     int year = 2022;
     year = DateTime.now().year;
-    String uid = FirebaseAuth.instance.currentUser?.uid ?? "";
+    if(FirebaseAuth.instance.currentUser == null) return;
+    String uid = FirebaseAuth.instance.currentUser!.uid;
     DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
         .instance
         .collection("User")
@@ -203,7 +206,8 @@ class WorkoutState extends ChangeNotifier {
   }
 
   /// downloads current streak
-  void getMyStreak() async {
+  Future<void> getMyStreak() async {
+    if(FirebaseAuth.instance.currentUser == null) return;
     String uid = FirebaseAuth.instance.currentUser!.uid;
     DocumentSnapshot<Map<String, dynamic>> doc =
         await FirebaseFirestore.instance.collection("User").doc(uid).get();
@@ -212,12 +216,13 @@ class WorkoutState extends ChangeNotifier {
     } else {
       myStreak = 0;
     }
-    notifyListeners();
+    /// will nofity all at once when all required data are downloaded
+    // notifyListeners();
   }
 
-  void downloadStreakRanking() {
+  Future<void> downloadStreakRanking() async {
     resetStreakRanking();
-    streakQuery.get().then((res) {
+    await streakQuery.get().then((res) {
       if (res.size == 0) {
         log("no streak rankings");
         return;
@@ -238,14 +243,15 @@ class WorkoutState extends ChangeNotifier {
         streakRanking["score"]?.add(data["streak"].toString());
         streakRankingSize++;
       }
-      log("Ranks :: ${streakRanking.toString()}");
-      notifyListeners(); // after successfully updating, need to notify listening widgets
+      log("Ranks :: (Streak Ranking) :: ${streakRanking.toString()}");
+      /// will nofity all at once when all required data are downloaded
+      // notifyListeners(); // after successfully updating, need to notify listening widgets
     });
   }
 
-  void downloadSBDSumRanking() {
+  Future<void> downloadSBDSumRanking() async {
     resetSBDSumRanking();
-    sbdSumQuery.get().then((res) {
+    await sbdSumQuery.get().then((res) {
       if (res.size == 0) {
         log("no sbdSum rankings");
         return;
@@ -265,10 +271,15 @@ class WorkoutState extends ChangeNotifier {
         sbdSumRanking["score"]?.add(data["sbdSum"].toString());
         sbdSumRankingSize++;
       }
-      log("Ranks :: ${sbdSumRanking.toString()}");
-      notifyListeners(); // after successfully updating, need to notify listening widgets
+      log("Ranks :: (SBDsum Ranking) :: ${sbdSumRanking.toString()}");
+      /// will nofity all at once when all required data are downloaded
+      // notifyListeners(); // after successfully updating, need to notify listening widgets
     });
   }
+
+  // void notifyListeners() {
+  //   notifyListeners();
+  // }
 
   Future<void> downloadUserData() async {
     userData = {}; // reset
@@ -279,11 +290,16 @@ class WorkoutState extends ChangeNotifier {
     }
   }
 
+  void updatePageData(){
+    notifyListeners();
+  }
+
+
   /// change this to download all rankings ??
-  void downloadVolumeRanking() {
+  Future<void> downloadVolumeRanking() async {
     // reset the outdated ranking
     resetVolumeRanking();
-    totalVolumeQuery.get().then((res) {
+    await totalVolumeQuery.get().then((res) {
       if (res.size == 0) {
         log("no volume rankings");
         return;
@@ -304,8 +320,9 @@ class WorkoutState extends ChangeNotifier {
         volumeRanking["score"]?.add(data["totalVolume"].toString());
         volumeRankingSize++;
       }
-      log("Ranks :: ${volumeRanking.toString()}");
-      notifyListeners(); // after successfully updating, need to notify listening widgets
+      log("Ranks :: (volumeRanking) :: ${volumeRanking.toString()}");
+      /// will update once all data download completes
+      // notifyListeners(); // after successfully updating, need to notify listening widgets
     });
     // since above operation is asynchronous, notifyListeners() must be called inside
   }
@@ -339,7 +356,7 @@ class WorkoutState extends ChangeNotifier {
         volumeRanking["totalVolume"]?.add(data["totalVolume"].toString());
         volumeRankingSize++;
       }
-      log("Ranks :: ${volumeRanking.toString()}");
+      log("Ranks :: (all ranks download) :: ${volumeRanking.toString()}");
       notifyListeners(); // after successfully updating, need to notify listening widgets
     });
     // since above operation is asynchronous, notifyListeners() must be called inside
@@ -359,7 +376,7 @@ class WorkoutState extends ChangeNotifier {
     final data = workout.data();
     String uid = FirebaseAuth.instance.currentUser!.uid;
     // <Map<String, dynamic>>
-    DocumentReference userDocRef = userCollectionRef.doc(uid);
+    DocumentReference<Map<String, dynamic>> userDocRef = userCollectionRef.doc(uid);
 
     /// calculate total volume of the workout
     num totalVolume = 0;
@@ -370,13 +387,13 @@ class WorkoutState extends ChangeNotifier {
     }
     data["todayVolume"] = totalVolume;
 
+    /// only for add workout
     /// upload workout data
     data["CreateDate"] =
         FieldValue.serverTimestamp(); // set to server timestamp
     // <Map<String, dynamic>>
     DocumentReference addedDocRef =
     await userDocRef.collection("Workout").add(data);
-
 
 
     /// Get timestamp of the added workout
@@ -390,7 +407,7 @@ class WorkoutState extends ChangeNotifier {
     log("ADD :: ${uploadDateTime.toString()}");
 
     /// Update totalVolume
-    DocumentSnapshot userDoc = await userDocRef.get();
+    DocumentSnapshot<Map<String, dynamic>> userDoc = await userDocRef.get();
     try {
       // log("******:${doc.get("totalVolume")}:******");
       totalVolume += userDoc.get('totalVolume') as int;
@@ -445,57 +462,58 @@ class WorkoutState extends ChangeNotifier {
     // else it is reset to zero
     // need to check if last workout date field exists
     Timestamp lastWorkoutTimeStamp;
-    label:
-    try {
-      lastWorkoutTimeStamp = userDoc.get("lastWorkout");
-      DateTime lastWorkoutDateTime = lastWorkoutTimeStamp.toDate();
-      DateTime u = DateTime(
-          uploadDateTime.year, uploadDateTime.month, uploadDateTime.day);
-      DateTime p = DateTime(
-          uploadDateTime.year, uploadDateTime.month, uploadDateTime.day - 1);
-      DateTime w = DateTime(lastWorkoutDateTime.year, lastWorkoutDateTime.month,
-          lastWorkoutDateTime.day);
-      if (u == w) {
-        /// this means that the person workout out more than once at the same day
-        /// this neither count nor reset workout streak
-        log("workout on the same doesn't count");
-        break label;
-      }
-      if (p == w) {
-        /// this means that this user worked out in a row, so add up streak
-        // get streak data
-        int streak = userDoc.get("streak") as int;
-        streak++;
-        // update streak data
-        userDocRef.set(
-          {"streak": streak},
-          SetOptions(merge: true),
-        );
-        log("worked out in a streak!");
-      }
+    // check if streak is zero
 
-      /// !!!!!!!!!
-      /// 처음에는 여기에서 streak를 초기화 하려고 했는데
-      /// 생각해 보니 운동을 안하고 하루가 지나면 자동으로 reset 되도록 해야한다
-      /// how to implement this...
-      /// server side? (could use firebase functions but this requires upgrading pricing plan)
-      // 일단 그래도 reset하기
-      else {
-        log("lost streak...");
+    Map<String, dynamic>? docData = userDoc.data();
+    if(docData != null && docData.keys.contains("lastWorkout")){
+      lastWorkoutTimeStamp = userDoc.get("lastWorkout");
+      int streak = userDoc.get("streak") as int;
+      if(streak == 0){
         userDocRef.set(
-          {"streak": 0},
+          {"streak": 1, "streakStartDate":uploadTimeStamp},
           SetOptions(merge: true),
         );
       }
-    } catch (e) {
-      /// lastWorkout field 가 없다는 것은 workout을 처음 등록 했다는 것이고,
-      /// 당연히 Streak 값도 없을 것이다
-      /// lastWorkout field는 마지막에 업데이트 되니 여기서는 그냥 streak를 1로 만들어준다
+      else{
+        DateTime lastWorkoutDateTime = lastWorkoutTimeStamp.toDate();
+        DateTime u = DateTime(
+            uploadDateTime.year, uploadDateTime.month, uploadDateTime.day);
+        DateTime p = DateTime(
+            uploadDateTime.year, uploadDateTime.month, uploadDateTime.day - 1);
+        DateTime w = DateTime(lastWorkoutDateTime.year, lastWorkoutDateTime.month,
+            lastWorkoutDateTime.day);
+        if (w == u) {
+          log("workout on the same doesn't count");
+          // break label;
+        }
+        else if (w == p) {
+          /// this means that this user worked out in a row, so add up streak
+          // get streak data
+          streak++;
+          // update streak data
+          userDocRef.set(
+            {"streak": streak},
+            SetOptions(merge: true),
+          );
+          log("worked out in a streak!");
+        }
+        else {
+          log("lost streak...");
+          userDocRef.set(
+            {"streak": 0},
+            SetOptions(merge: true),
+          );
+        }
+      }
+    }
+    // no field value
+    else{
       userDocRef.set(
-        {"streak": 1},
+        {"streak": 1, "streakStartDate":uploadTimeStamp},
         SetOptions(merge: true),
       );
     }
+    // lastWorkout field value is added at the end
 
     /// Update SBD-Max
     // create "sbdMax" field under user doc
@@ -592,10 +610,14 @@ class WorkoutState extends ChangeNotifier {
                   data['CreateDate'].millisecondsSinceEpoch)
               .toLocal()
               .toString();
+
           final workout = Workout(
             createDate: createDate,
             exercises: exercises,
           );
+          /// todayVolume could me null?
+          workout.todayVolume = data['todayVolume'];
+
           _workouts.add(workout);
         }
         log(_workouts.toString());
