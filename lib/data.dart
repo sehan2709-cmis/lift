@@ -7,6 +7,7 @@ import 'package:draw_graph/models/feature.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:lift/editworkout.dart';
 import 'package:lift/model/Workout.dart';
 import 'package:lift/state_management/DataState.dart';
 import 'package:lift/state_management/WorkoutState.dart';
@@ -146,6 +147,11 @@ class _DataPageState extends State<DataPage> {
                 icon: const Icon(Icons.edit),
                 color: Colors.blueAccent,
                 onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => EditWorkOut(editWorkout: workout,),
+                    ),
+                  );
                   /// goto edit page
                   ///
                 },

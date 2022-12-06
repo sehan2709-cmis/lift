@@ -14,26 +14,27 @@ import 'navigation_bar/bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class WorkoutTest extends StatefulWidget {
+class EditWorkOut extends StatefulWidget {
+  final Workout editWorkout;
+  const EditWorkOut({required this.editWorkout});
+
   @override
-  State<WorkoutTest> createState() => _WorkoutTest();
+  State<EditWorkOut> createState() => _EditWorkOut();
 }
 
-Workout workout = Workout();
-List< List<TextEditingController> > weightcontrol = [];
-List< List<TextEditingController> > repscontrol = [];
-
-class _WorkoutTest extends State<WorkoutTest> {
+class _EditWorkOut extends State<EditWorkOut> {
+  List< List<TextEditingController> > weightcontrol = [];
+  List< List<TextEditingController> > repscontrol = [];
+  int count = 0;
   final addWorkout = TextEditingController();
 
-  @override
+
   List<Row> _buildSet(Exercise exercise, List<TextEditingController> weightControl, List<TextEditingController> repsControl){
     print("wieghtControl length = ${weightControl.length}, repsControl length = ${repsControl.length}");
     int count = 0;
     if (exercise.Sets.isEmpty) {
       return const <Row>[];
     }
-
     return exercise.Sets.map((set){
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -47,9 +48,7 @@ class _WorkoutTest extends State<WorkoutTest> {
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.digitsOnly
               ],
-
               controller: weightControl[count-1],
-
               decoration: InputDecoration(
                 labelText: "kg",
                 border: OutlineInputBorder(),
@@ -88,11 +87,11 @@ class _WorkoutTest extends State<WorkoutTest> {
   }//운동별 세트
 
   List<Widget> _buildCards(BuildContext context) {
-    if (workout.exercises.isEmpty) {
+    if (widget.editWorkout.exercises.isEmpty) {
       return const <Card>[];
     }
 
-    return workout.exercises.map((exercise) {
+    return widget.editWorkout.exercises.map((exercise) {
       return Column(
         children: [
           Card(
@@ -122,8 +121,8 @@ class _WorkoutTest extends State<WorkoutTest> {
                                   SizedBox(height: 10,),
                                   MaterialButton( //search on color
                                     shape: OutlineInputBorder(
-                                        borderRadius: new BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: Color(0xFF545454)),
+                                      borderRadius: new BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Color(0xFF545454)),
                                     ),
                                     onPressed: () {},
                                     child: Container(
@@ -190,7 +189,7 @@ class _WorkoutTest extends State<WorkoutTest> {
                       IconButton(
                           onPressed: (){
                             setState(() {
-                              workout.exercises.remove(exercise);
+                              widget.editWorkout.exercises.remove(exercise);
                             });
                           },
                           icon: Icon(CupertinoIcons.trash)),
@@ -206,7 +205,7 @@ class _WorkoutTest extends State<WorkoutTest> {
                     ],
                   ), //number weight reps check buttons
                   Column(
-                    children: _buildSet(exercise, weightcontrol[workout.exercises.indexOf(exercise)], repscontrol[workout.exercises.indexOf(exercise)]),
+                    children: _buildSet(exercise, weightcontrol[widget.editWorkout.exercises.indexOf(exercise)], repscontrol[widget.editWorkout.exercises.indexOf(exercise)]),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -218,8 +217,8 @@ class _WorkoutTest extends State<WorkoutTest> {
                         onPressed: () {
                           setState(() {
                             exercise.Sets.removeLast();
-                            weightcontrol[workout.exercises.indexOf(exercise)].removeLast();
-                            repscontrol[workout.exercises.indexOf(exercise)].removeLast();
+                            weightcontrol[widget.editWorkout.exercises.indexOf(exercise)].removeLast();
+                            repscontrol[widget.editWorkout.exercises.indexOf(exercise)].removeLast();
                           });
                         },
                         child: Text(
@@ -237,8 +236,8 @@ class _WorkoutTest extends State<WorkoutTest> {
                         onPressed: () {
                           setState(() {
                             exercise.addSet(0, 0);
-                            weightcontrol[workout.exercises.indexOf(exercise)].add(TextEditingController());
-                            repscontrol[workout.exercises.indexOf(exercise)].add(TextEditingController());
+                            weightcontrol[widget.editWorkout.exercises.indexOf(exercise)].add(TextEditingController());
+                            repscontrol[widget.editWorkout.exercises.indexOf(exercise)].add(TextEditingController());
                           });
                         },
                         child: Text(
@@ -260,15 +259,39 @@ class _WorkoutTest extends State<WorkoutTest> {
     }).toList();
   }//운동 이름
 
+  @override
   Widget build(BuildContext context) {
     WorkoutState _workout = Provider.of<WorkoutState>(context);
+
+    if(count == 0) {
+      int index = 0;
+      for (var element in widget.editWorkout.exercises) {
+        List<TextEditingController> newcontrol = [];
+        List<TextEditingController> newcontrol2 = [];
+        weightcontrol.add(newcontrol);
+        repscontrol.add(newcontrol2);
+
+        for (var setElement in element.Sets) {
+          weightcontrol[index].add(TextEditingController(text: setElement["weight"].toString()));
+          repscontrol[index].add(TextEditingController(text: setElement["reps"].toString()));
+
+          // workout.exercises[index].Sets.set['weight'] = int.parse(weightControl[exercise.Sets.indexOf(set)].text); //Exercise에 index 추가해야함
+          // set['reps'] = int.parse(repsControl[exercise.Sets.indexOf(set)].text);//Exercise에 index 추가해야함
+        }
+        index++;
+      }
+    }
+
+    // log(workout.exercises.toString());
+    // log(weightcontrol.toString());
     // BNavigationBar nevi =
 
     // List<Widget> squatrow = new List.generate(_squatset, (int i) => new ContactRow());
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("work out"),
+        title: Text("edit work out"),
+        // leading: ,
         elevation: 6.0,
       ),
       body: ListView(
@@ -283,14 +306,6 @@ class _WorkoutTest extends State<WorkoutTest> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    MaterialButton(
-                        color: Colors.grey[200],
-                        shape: OutlineInputBorder(
-                            borderRadius: new BorderRadius.circular(12)
-                        ),
-                        onPressed: () {},
-                        child: Icon(CupertinoIcons.timer)
-                    ),
                     MaterialButton(
                       color: Colors.grey[200],
                       shape: OutlineInputBorder(
@@ -323,7 +338,7 @@ class _WorkoutTest extends State<WorkoutTest> {
                             TextButton(
                               onPressed: () {
                                 setState(() {
-                                  workout.exercises.add(Exercise(addWorkout.text));
+                                  widget.editWorkout.exercises.add(Exercise(addWorkout.text));
                                   List<TextEditingController> newcontrol = [];
                                   List<TextEditingController> newcontrol2 = [];
                                   weightcontrol.add(newcontrol);
@@ -352,20 +367,22 @@ class _WorkoutTest extends State<WorkoutTest> {
                       ),
                       onPressed: () {
                         setState(() {
-                          if (workout.exercises.isEmpty) {
+                          if (widget.editWorkout.exercises.isEmpty) {
                             print("운동을 추가하시오");
                             return;
                           }
 
-                          print(workout.toString());
-                          _workout.addWorkout(workout);
-                          workout.exercises.clear();
+                          print(widget.editWorkout.toString());
+                          _workout.addWorkout(widget.editWorkout);
+                          widget.editWorkout.exercises.clear();
                           weightcontrol.clear();
                           repscontrol.clear();
+
+                          Navigator.pop(context);
                         });
                       },
                       child: Text(
-                        "FINISH",
+                        "Edit",
                         style: TextStyle(
                           color: Colors.black,
                         ),
